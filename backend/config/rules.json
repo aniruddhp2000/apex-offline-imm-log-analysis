@@ -2305,5 +2305,93 @@
     "description": "Auto-learned exception signature detected in logs. Occurred 3 times during incident analysis.",
     "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
     "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-E93C63BC",
+    "name": "Learned System Issue: :\\\\+\\+error\\+The\\+client\\+could\\+not\\+co...",
+    "severity": "ERROR",
+    "patterns": [
+      ":\\\\d\\+\\\\s+error\\\\s+The\\\\s+client\\\\s+could\\\\s+not\\\\s+connect\\\\s+to\\\\s+ainholdingsxpi\\.jp:\\\\d\\+,\\\\s+for\\\\s+more\\\\s+details\\\\s+please\\\\s+check\\\\s+Error:\\\\s+connect\\\\s+ETIMEDOUT"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 8 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-782DB4C0",
+    "name": "Learned Exception: ReplyError",
+    "severity": "ERROR",
+    "patterns": [
+      ":\\\\d\\+\\\\s+error\\\\s+error:\\\\s+ReplyError:\\\\s+ERR\\\\s+new\\\\s+objects\\\\s+must\\\\s+be\\\\s+created\\\\s+at\\\\s+the\\\\s+root"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 76 times during incident analysis.",
+    "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-ABFB832B",
+    "name": "Learned Exception: ReplyError",
+    "severity": "ERROR",
+    "patterns": [
+      ":\\\\d\\+\\\\s+error\\\\s+Failed\\\\s+to\\\\s+update\\\\s+Agent\\\\s+is\\\\s+alive\\\\s+error:ReplyError:\\\\s+ERR\\\\s+new\\\\s+objects\\\\s+must\\\\s+be\\\\s+created\\\\s+at\\\\s+the\\\\s+root"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 75 times during incident analysis.",
+    "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-DF83CA7B",
+    "name": "Learned System Issue: :\\\\+\\+error\\+The\\+client\\+could\\+not\\+co...",
+    "severity": "ERROR",
+    "patterns": [
+      ":\\\\d\\+\\\\s+error\\\\s+The\\\\s+client\\\\s+could\\\\s+not\\\\s+connect\\\\s+to\\\\s+ainholdingsxpi\\.jp:\\\\d\\+,\\\\s+for\\\\s+more\\\\s+details\\\\s+please\\\\s+check\\\\s+Error:\\\\s+write\\\\s+ECONNABORTED"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 2 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-87AD70CD",
+    "name": "Learned System Issue: :\\\\+\\+error\\+The\\+client\\+could\\+not\\+co...",
+    "severity": "ERROR",
+    "patterns": [
+      ":\\\\d\\+\\\\s+error\\\\s+The\\\\s+client\\\\s+could\\\\s+not\\\\s+connect\\\\s+to\\\\s+ainholdingsxpi\\.jp:\\\\d\\+,\\\\s+for\\\\s+more\\\\s+details\\\\s+please\\\\s+check\\\\s+Error:\\\\s+read\\\\s+ECONNRESET"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 1 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-982C3CE6",
+    "name": "Learned Exception: HandleWebException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+\\[\\\\d\\+\\]\\\\s+ERROR\\\\s+AspNetWebRequester\\.WebRequestHandler\\\\s+\\-\\\\s+Exception:\\\\s+System\\.Exception:\\\\s+Internal\\\\s+server\\\\s+error\\\\s+retured\\\\s+from\\\\s+web\\\\s+server\\\\s+:http://ainholdingsxpi\\.jp/immtunnel/\\\\s+場所\\\\s+AspNetWebRequester\\.WebRequestHandler\\.HandleWebExceptions\\(WebException\\\\s+webException,\\\\s+String\\\\s+requestExchangeId\\)\\\\s+場所\\\\s+AspNetWebRequester\\.WebRequestHandler\\.SendRequestToNodeJS\\(MgHttpRequest\\\\s+mgHttpRequest\\)\\\\s+場所\\\\s+AspNetWebRequester\\.WebRequestHandler\\.ProcessRequest\\(HttpContext\\\\s+httpContext\\)"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 4230 times during incident analysis.",
+    "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-A3195FBD",
+    "name": "Learned System Issue: ,\\\\+\\+\\[\\\\+\\]\\+ERROR\\+AspNetWebRequester...",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+\\[\\\\d\\+\\]\\\\s+ERROR\\\\s+AspNetWebRequester\\.WebRequestHandler\\\\s+\\-\\\\s+Failed\\\\s+to\\\\s+connect\\\\s+to\\\\s+web\\\\s+server\\\\s+:http://ainholdingsxpi\\.jp/immtunnel/ExchangeId\\\\s+=\\[\\\\d\\+:\\\\d\\+:\\\\d\\+\\.\\\\d\\+_\\\\d\\+\\]\\.configuredTimeout\\\\s+=\\[\\\\d\\+\\]\\\\s+seconds"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 22 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-E17BED47",
+    "name": "Learned Exception: WebException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+\\[\\\\d\\+\\]\\\\s+ERROR\\\\s+AspNetWebRequester\\.WebRequestHandler\\\\s+\\-\\\\s+Exception:\\\\s+System\\.Net\\.WebException:\\\\s+Timeout\\\\s+reached\\\\s+while\\\\s+waiting\\\\s+for\\\\s+a\\\\s+response\\.\\\\s+ExchangeId=\\[\\\\d\\+:\\\\d\\+:\\\\d\\+\\.\\\\d\\+_\\\\d\\+\\]\\.\\\\s+configuredTimeout=\\[\\\\d\\+\\]\\\\s+seconds\\\\s+場所\\\\s+AspNetWebRequester\\.WebRequestHandler\\.HandleWebExceptions\\(WebException\\\\s+webException,\\\\s+String\\\\s+requestExchangeId\\)\\\\s+場所\\\\s+AspNetWebRequester\\.WebRequestHandler\\.SendRequestToNodeJS\\(MgHttpRequest\\\\s+mgHttpRequest\\)\\\\s+場所\\\\s+AspNetWebRequester\\.WebRequestHandler\\.ProcessRequest\\(HttpContext\\\\s+httpContext\\)"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 8 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
   }
 ]
