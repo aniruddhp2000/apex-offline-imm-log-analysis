@@ -8,7 +8,9 @@ from backend.parser.base_parser import ParsedEntry
 class RCAHeuristics:
     def __init__(self, rules_path=None):
         if rules_path is None:
-            rules_path = os.path.join("e:\\Tools\\imm-rca-utility", "backend", "config", "rules.json")
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
+            rules_path = os.path.join(project_root, "backend", "config", "rules.json")
         self.rules_path = os.path.abspath(rules_path)
         self.rules = []
         self._load_rules()

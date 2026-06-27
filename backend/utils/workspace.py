@@ -6,7 +6,9 @@ import shutil
 class WorkspaceManager:
     def __init__(self, base_dir=None):
         if base_dir is None:
-            base_dir = os.path.join("e:\\Tools\\imm-rca-utility", "workspaces")
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
+            base_dir = os.path.join(project_root, "workspaces")
         self.base_dir = os.path.abspath(base_dir)
         os.makedirs(self.base_dir, exist_ok=True)
 

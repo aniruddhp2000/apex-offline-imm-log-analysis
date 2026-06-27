@@ -8,7 +8,9 @@ from .base_parser import BaseLogParser, ParsedEntry
 class GenericParser(BaseLogParser):
     def __init__(self, config_path=None):
         if config_path is None:
-            config_path = os.path.join("e:\\Tools\\imm-rca-utility", "backend", "config", "parser_config.json")
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
+            config_path = os.path.join(project_root, "backend", "config", "parser_config.json")
         self.config_path = os.path.abspath(config_path)
         
         # Compiled patterns loaded dynamically

@@ -48,6 +48,38 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Init ---
     loadRulesDatabase();
 
+    // Theme Switcher Init
+    const savedTheme = localStorage.getItem("rca-theme") || "default-blue";
+    setTheme(savedTheme);
+
+    document.querySelectorAll(".theme-dot").forEach(dot => {
+        dot.addEventListener("click", () => {
+            const themeName = dot.getAttribute("data-theme");
+            setTheme(themeName);
+        });
+    });
+
+    function setTheme(themeName) {
+        document.documentElement.setAttribute("data-theme", themeName);
+        localStorage.setItem("rca-theme", themeName);
+        
+        document.querySelectorAll(".theme-dot").forEach(d => {
+            if (d.getAttribute("data-theme") === themeName) {
+                d.classList.add("active");
+            } else {
+                d.classList.remove("active");
+            }
+        });
+    }
+
+    // Prevent browser default drop behaviors globally
+    window.addEventListener("dragover", (e) => {
+        e.preventDefault();
+    }, false);
+    window.addEventListener("drop", (e) => {
+        e.preventDefault();
+    }, false);
+
     // --- Navigation ---
     navDashboardLink.addEventListener("click", (e) => {
         e.preventDefault();
@@ -71,7 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
         loadRulesDatabase();
     });
 
-    // Dummy scroll navigation handlers
     navTimelineLink.addEventListener("click", (e) => {
         e.preventDefault();
         if (navTimelineLink.classList.contains("disabled")) return;
@@ -111,11 +142,29 @@ document.addEventListener("DOMContentLoaded", () => {
         logDropzone.classList.remove("dragover");
     });
 
-    logDropzone.addEventListener("drop", (e) => {
+    logDropzone.addEventListener("drop", async (e) => {
         e.preventDefault();
         logDropzone.classList.remove("dragover");
-        if (e.dataTransfer.files.length > 0) {
-            // Drag and drop folders or files
+        
+        const items = e.dataTransfer.items;
+        if (items && items.length > 0) {
+            let filesList = [];
+            const promises = [];
+            
+            for (let i = 0; i < items.length; i++) {
+                const entry = items[i].webkitGetAsEntry();
+                if (entry) {
+                    promises.push(traverseFileTree(entry).then(files => {
+                        filesList = filesList.concat(files);
+                    }));
+                }
+            }
+            
+            await Promise.all(promises);
+            if (filesList.length > 0) {
+                uploadFileList(filesList);
+            }
+        } else if (e.dataTransfer.files.length > 0) {
             handleFilesUpload(e.dataTransfer.files);
         }
     });
@@ -132,23 +181,45 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    async function traverseFileTree(item, path = "") {
+        if (item.isFile) {
+            return new Promise((resolve) => {
+                item.file((file) => {
+                    resolve([{ file, path: path + file.name }]);
+                });
+            });
+        } else if (item.isDirectory) {
+            const dirReader = item.createReader();
+            const entries = await new Promise((resolve) => {
+                dirReader.readEntries((results) => resolve(results));
+            });
+            const filePromises = entries.map(entry => traverseFileTree(entry, path + item.name + "/"));
+            const files = await Promise.all(filePromises);
+            return files.flat();
+        }
+        return [];
+    }
+
     function handleFilesUpload(fileList) {
-        // Show progress UI, hide upload details
+        let list = [];
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList[i];
+            const path = file.webkitRelativePath || file.name;
+            list.push({ file, path });
+        }
+        uploadFileList(list);
+    }
+
+    function uploadFileList(filesList) {
         logDropzone.classList.add("hidden");
         uploadProgressContainer.classList.remove("hidden");
         updateProgress(10, "Uploading logs...", stepUpload);
 
         const formData = new FormData();
         
-        // Append all selected files
-        for (let i = 0; i < fileList.length; i++) {
-            const file = fileList[i];
-            
-            // Reconstruct directory paths if present (from folder pickers)
-            // HTML5 provides webkitRelativePath for directory uploads
-            const path = file.webkitRelativePath || file.name;
-            formData.append("files", file, path);
-        }
+        filesList.forEach(item => {
+            formData.append("files", item.file, item.path);
+        });
 
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/api/upload", true);
@@ -164,8 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (xhr.status === 200) {
                 const response = JSON.parse(xhr.responseText);
                 currentSessionId = response.session_id;
-                
-                // Extraction and analysis steps progress bar mapping
+
                 setTimeout(() => {
                     updateProgress(60, "Scanning files & directories...", stepExtract);
                     setTimeout(() => {
@@ -178,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             updateProgress(100, analyzeText, stepAnalyze);
                             setTimeout(() => {
                                 loadReportResults(currentSessionId);
-                                loadRulesDatabase(); // Refresh rules to show learned items
+                                loadRulesDatabase();
                             }, 800);
                         }, 500);
                     }, 500);
@@ -254,6 +324,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     metricCrashes.parentElement.parentElement.classList.remove("critical");
                 }
 
+                // Display identified products list
+                if (data.summary.detected_products && data.summary.detected_products.length > 0) {
+                    const productsText = data.summary.detected_products.join(", ");
+                    document.getElementById("main-subheading").innerHTML = `Identified Products: <strong>${productsText}</strong>`;
+                }
+
                 renderReport(data.markdown_report);
 
                 originalTimeline = data.timeline;
@@ -294,7 +370,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     const typeText = isLearned ? "🤖 Self-Learned" : "System Static";
                     const typeClass = isLearned ? "learned" : "static";
 
-                    // Escape regex patterns for display
                     const escapedPattern = escapeHtml(rule.patterns.join(" | "));
 
                     node.innerHTML = `
@@ -464,5 +539,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".nav-item").forEach(el => {
             if (el.id !== "nav-dashboard-link" && el.id !== "nav-rules-link") el.classList.add("disabled");
         });
+        document.getElementById("main-subheading").innerText = "Upload logs to initiate multi-system trace and anomaly detection.";
     });
 });

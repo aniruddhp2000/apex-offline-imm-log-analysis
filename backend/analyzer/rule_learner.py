@@ -6,10 +6,12 @@ import subprocess
 
 class RuleLearner:
     def __init__(self, rules_path=None, parser_config_path=None):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        self.project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
         if rules_path is None:
-            rules_path = os.path.join("e:\\Tools\\imm-rca-utility", "backend", "config", "rules.json")
+            rules_path = os.path.join(self.project_root, "backend", "config", "rules.json")
         if parser_config_path is None:
-            parser_config_path = os.path.join("e:\\Tools\\imm-rca-utility", "backend", "config", "parser_config.json")
+            parser_config_path = os.path.join(self.project_root, "backend", "config", "parser_config.json")
             
         self.rules_path = os.path.abspath(rules_path)
         self.parser_config_path = os.path.abspath(parser_config_path)
@@ -219,8 +221,7 @@ class RuleLearner:
 
     def _commit_to_git(self, commit_msg: str):
         try:
-            # Change directory to E:\Tools\imm-rca-utility
-            cwd = "E:\\Tools\\imm-rca-utility"
+            cwd = self.project_root
             
             # Run git add and commit
             subprocess.run(["git", "add", "backend/config/rules.json", "backend/config/parser_config.json"], cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

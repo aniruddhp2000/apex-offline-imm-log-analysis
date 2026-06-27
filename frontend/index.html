@@ -52,9 +52,17 @@
                     <h1 id="main-heading">System Root Cause Analysis Hub</h1>
                     <p class="header-subtitle" id="main-subheading">Upload logs to initiate multi-system trace and anomaly detection.</p>
                 </div>
-                <div class="header-status" id="connection-status">
-                    <span class="status-indicator online"></span>
-                    <span class="status-text">Core Service Connected</span>
+                <div class="header-right">
+                    <div class="theme-switcher" id="theme-switcher">
+                        <button class="theme-dot active" data-theme="default-blue" title="Magic Deep Blue" style="background-color: #0098da;"></button>
+                        <button class="theme-dot" data-theme="magic-purple" title="Magic Purple (xpi)" style="background-color: #a2238e;"></button>
+                        <button class="theme-dot" data-theme="slate-blue" title="Magic Slate" style="background-color: #6b96c0;"></button>
+                        <button class="theme-dot" data-theme="cyber-cyan" title="Cyber Cyan" style="background-color: #06B6D4;"></button>
+                    </div>
+                    <div class="header-status" id="connection-status">
+                        <span class="status-indicator online"></span>
+                        <span class="status-text">Core Service Connected</span>
+                    </div>
                 </div>
             </header>
 
@@ -178,5 +186,7 @@
             </section>
         </main>
     </div>
+    <!-- Client Application Logic -->
+    <script src="app.js"></script>
 </body>
 </html>
