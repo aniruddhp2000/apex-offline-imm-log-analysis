@@ -63,14 +63,16 @@ def startup_learn_flow():
         try:
             filename = os.path.basename(log_path)
             # Read sample lines to learn custom timestamp formats
-            with open(log_path, 'r', encoding='utf-8', errors='ignore') as sf:
-                sample_lines = [sf.readline() for _ in range(50)]
+            try:
+                sample_lines = generic_parser._read_file_lines(log_path)[:50]
                 scanned_lines.extend(sample_lines)
+            except Exception as e:
+                print(f"Skipping sample reading for {log_path} due to: {e}")
             # Parse entries to learn error signatures
             entries = generic_parser.parse(log_path, filename)
             parsed_entries.extend(entries)
         except Exception as e:
-            print(f"Error reading local installation log {log_path}: {e}")
+            print(f"Error scanning local installation log {log_path}: {e}")
                 
     # Trigger learning loops
     if scanned_lines:

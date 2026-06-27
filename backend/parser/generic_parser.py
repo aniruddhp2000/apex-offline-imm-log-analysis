@@ -70,8 +70,7 @@ class GenericParser(BaseLogParser):
             return self._parse_csv(filepath, relative_path)
             
         entries = []
-        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-            lines = f.readlines()
+        lines = self._read_file_lines(filepath)
 
         for line_num, line in enumerate(lines, 1):
             line_str = line.strip()
@@ -232,3 +231,29 @@ class GenericParser(BaseLogParser):
             except:
                 continue
         return datetime.datetime.utcnow()
+
+    def _read_file_lines(self, filepath: str) -> list:
+        try:
+            with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                return f.readlines()
+        except (PermissionError, IOError, OSError) as e:
+            # Sharing lock bypass: copy to workspaces temp
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
+            temp_dir = os.path.join(project_root, "workspaces", "temp")
+            os.makedirs(temp_dir, exist_ok=True)
+            
+            import uuid
+            import shutil
+            temp_path = os.path.join(temp_dir, f"temp_log_{uuid.uuid4().hex}.log")
+            try:
+                shutil.copyfile(filepath, temp_path)
+                with open(temp_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    lines = f.readlines()
+                os.remove(temp_path)
+                return lines
+            except Exception as inner_e:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+                print(f"Failed bypass copy-read for {filepath}: {inner_e}")
+                raise e

@@ -146,7 +146,7 @@ class RuleLearner:
         cleaned = "\\\\d+".join(escaped_parts)
         
         # Collapse multiple spaces or multiple wildcards
-        cleaned = re.sub(r"\s+", "\\s+", cleaned)
+        cleaned = re.sub(r"\s+", r"\\s+", cleaned)
         return cleaned
 
     def _deduce_rule_name(self, signature: str) -> str:
