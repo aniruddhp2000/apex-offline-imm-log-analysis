@@ -1,0 +1,21 @@
+- [x] Initialize project directory and files structure
+- [x] Implement backend components
+  - [x] Workspace manager and ZIP/directory extractor
+  - [x] Log discovery and parser strategy interface
+  - [x] Specialized Redis and Sentinel parsers
+  - [x] Generic log parser (regex-based, stack trace detector, HTTP logs)
+  - [x] Chronological timeline merger with timezone normalization
+  - [x] Anomaly detection and root cause correlation engine
+  - [x] Markdown and PDF export handlers
+- [x] Implement frontend client interface
+  - [x] HTML5 layout and file upload drop zone
+  - [x] Custom modern UI theme (vanilla CSS, glassmorphism, responsive)
+  - [x] State management, polling, and API integrations
+  - [x] Interactive timeline rendering with anomaly markers
+  - [x] Markdown display with integrated Mermaid.js diagrams
+- [x] Create documentation
+  - [x] Write detailed technical architecture white paper
+  - [x] Write end-user operations guide
+- [x] Perform verification and validation
+  - [x] Verify utility using NHK production logs ZIP file
+  - [x] Test PDF/Markdown report export functions

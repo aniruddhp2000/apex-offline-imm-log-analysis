@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Log Diagnostic & RCA Hub</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="app.css">
+    <!-- Marked Markdown Parser and Mermaid Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <!-- Background Blur Gradients -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fa-solid fa-microchip-heading logo-icon"></i>
+                <span class="logo-text">RCA <span class="logo-sub">Diagnostic</span></span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" id="nav-dashboard-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="#" class="nav-item disabled" id="nav-timeline-link"><i class="fa-solid fa-timeline"></i> Timeline</a>
+                <a href="#" class="nav-item disabled" id="nav-report-link"><i class="fa-solid fa-file-invoice"></i> Analysis Report</a>
+            </nav>
+            <div class="sidebar-footer">
+                <span class="footer-label">Internal R&D / Support Utility</span>
+                <span class="footer-version">v1.0.0</span>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-info">
+                    <h1 id="main-heading">System Root Cause Analysis Hub</h1>
+                    <p class="header-subtitle" id="main-subheading">Upload logs to initiate multi-system trace and anomaly detection.</p>
+                </div>
+                <div class="header-status" id="connection-status">
+                    <span class="status-indicator online"></span>
+                    <span class="status-text">Core Service Connected</span>
+                </div>
+            </header>
+
+            <!-- Upload Panel (Initial State) -->
+            <section class="workspace-section active" id="upload-workspace">
+                <div class="card glass upload-card">
+                    <div class="upload-dropzone" id="log-dropzone">
+                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <h3>Analyze Log Archive</h3>
+                        <p>Drag and drop a log ZIP file, or click to browse</p>
+                        <span class="upload-hint">Supports ZIP containing Redis, Sentinel, Ingress & Application logs</span>
+                        <input type="file" id="file-input" accept=".zip" class="hidden-input">
+                    </div>
+                    
+                    <!-- Progress Container -->
+                    <div class="progress-container hidden" id="upload-progress-container">
+                        <div class="progress-header">
+                            <span id="progress-status">Uploading archive...</span>
+                            <span id="progress-percentage">0%</span>
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar" id="upload-progress-bar"></div>
+                        </div>
+                        <div class="progress-steps">
+                            <div class="step-indicator active" id="step-upload"><i class="fa-solid fa-circle-check"></i> Upload</div>
+                            <div class="step-indicator" id="step-extract"><i class="fa-solid fa-arrows-spin"></i> Extract</div>
+                            <div class="step-indicator" id="step-parse"><i class="fa-solid fa-code-branch"></i> Parse</div>
+                            <div class="step-indicator" id="step-analyze"><i class="fa-solid fa-brain"></i> Analyze</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Panel (Active State) -->
+            <section class="workspace-section hidden" id="results-workspace">
+                <!-- Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="card glass metric-card critical">
+                        <div class="metric-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="metric-data">
+                            <span class="metric-value" id="metric-crashes">0</span>
+                            <span class="metric-label">Crashes Detected</span>
+                        </div>
+                    </div>
+                    <div class="card glass metric-card warning">
+                        <div class="metric-icon"><i class="fa-solid fa-shuffle"></i></div>
+                        <div class="metric-data">
+                            <span class="metric-value" id="metric-failovers">0</span>
+                            <span class="metric-label">Sentinel Failovers</span>
+                        </div>
+                    </div>
+                    <div class="card glass metric-card danger">
+                        <div class="metric-icon"><i class="fa-solid fa-bug"></i></div>
+                        <div class="metric-data">
+                            <span class="metric-value" id="metric-errors">0</span>
+                            <span class="metric-label">HTTP 5xx Errors</span>
+                        </div>
+                    </div>
+                    <div class="card glass metric-card info">
+                        <div class="metric-icon"><i class="fa-solid fa-list-check"></i></div>
+                        <div class="metric-data">
+                            <span class="metric-value" id="metric-entries">0</span>
+                            <span class="metric-label">Log Entries Processed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analysis Workspace Grid -->
+                <div class="workspace-grid">
+                    <!-- Left Panel: Interactive Timeline -->
+                    <div class="card glass workspace-panel" id="panel-timeline">
+                        <div class="panel-header">
+                            <h2><i class="fa-solid fa-timeline"></i> Chronological Timeline</h2>
+                            <div class="timeline-filters">
+                                <button class="filter-btn active" data-filter="all">All</button>
+                                <button class="filter-btn" data-filter="CRITICAL">Crashes</button>
+                                <button class="filter-btn" data-filter="WARNING">Failovers</button>
+                                <button class="filter-btn" data-filter="ERROR">Errors</button>
+                            </div>
+                        </div>
+                        <div class="timeline-scroll-area" id="timeline-container">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: RCA Markdown Report -->
+                    <div class="card glass workspace-panel" id="panel-report">
+                        <div class="panel-header">
+                            <h2><i class="fa-solid fa-file-invoice"></i> Investigation Report</h2>
+                            <div class="report-actions">
+                                <button class="action-btn primary" id="btn-download-pdf"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                                <button class="action-btn" id="btn-download-md"><i class="fa-solid fa-file-markdown"></i> Markdown</button>
+                                <button class="action-btn" id="btn-analyze-new"><i class="fa-solid fa-arrow-rotate-left"></i> New Analysis</button>
+                            </div>
+                        </div>
+                        <div class="report-body-area markdown-body" id="report-container">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
