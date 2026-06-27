@@ -1,0 +1,76 @@
+[
+  {
+    "rule_id": "SYS-REDIS-001",
+    "name": "Redis Core Process Crash",
+    "severity": "CRITICAL",
+    "patterns": [
+      "crashed by signal",
+      "Accessing address:",
+      "Crashed running the instruction at"
+    ],
+    "description": "The primary Redis database engine process crashed unexpectedly due to a system level signal (e.g. SIGSEGV).",
+    "remediation": "Identify the crashing module (like redisearch.so). Check configuration parameters or plan a database stack upgrade.",
+    "type": "static"
+  },
+  {
+    "rule_id": "SYS-SENTINEL-002",
+    "name": "Redis Sentinel Failover Active",
+    "severity": "WARNING",
+    "patterns": [
+      "\\+switch-master",
+      "\\+sdown master",
+      "\\+odown master",
+      "\\+reboot master"
+    ],
+    "description": "Redis Sentinel HA controller detected master offline and actively negotiated replica promotion.",
+    "remediation": "Check the health of the previous master container. Verify cluster network connectivity.",
+    "type": "static"
+  },
+  {
+    "rule_id": "SYS-HTTP-5XX",
+    "name": "HTTP 5xx Server Error Spike",
+    "severity": "ERROR",
+    "patterns": [
+      " 500 ",
+      " 503 ",
+      " 502 "
+    ],
+    "description": "Clients encountered HTTP 500/502/503 responses, indicating the gateway failed to establish connection with upstream services.",
+    "remediation": "Verify ingress proxy settings, network routes, and upstream application pod load statistics.",
+    "type": "static"
+  },
+  {
+    "rule_id": "SYS-ERR-JAVA-NPE",
+    "name": "Java Null Pointer Exception",
+    "severity": "ERROR",
+    "patterns": [
+      "NullPointerException"
+    ],
+    "description": "The application code attempted to access an uninitialized object pointer.",
+    "remediation": "Inspect the code stack trace, verify parameter mapping validations, and update application code handles.",
+    "type": "static"
+  },
+  {
+    "rule_id": "SYS-ERR-OOM",
+    "name": "JVM/Process Out Of Memory (OOM)",
+    "severity": "CRITICAL",
+    "patterns": [
+      "OutOfMemoryError",
+      "OOMKilled"
+    ],
+    "description": "The application ran out of heap space or exceeded Kubernetes memory boundaries.",
+    "remediation": "Increase JVM memory pool settings (-Xmx) or scale up the container container memory limits in the yaml spec.",
+    "type": "static"
+  },
+  {
+    "rule_id": "SYS-ERR-PYTHON-TB",
+    "name": "Python Traceback Exception",
+    "severity": "ERROR",
+    "patterns": [
+      "Traceback \\(most recent call"
+    ],
+    "description": "A Python process terminated due to an unhandled runtime exception.",
+    "remediation": "Examine code stack frames, parameter validity, or missing libraries.",
+    "type": "static"
+  }
+]

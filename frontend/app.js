@@ -7,8 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // DOM Elements
     const logDropzone = document.getElementById("log-dropzone");
     const fileInput = document.getElementById("file-input");
+    const folderInput = document.getElementById("folder-input");
     const uploadWorkspace = document.getElementById("upload-workspace");
     const resultsWorkspace = document.getElementById("results-workspace");
+    const rulesWorkspace = document.getElementById("rules-workspace");
     const uploadProgressContainer = document.getElementById("upload-progress-container");
     const progressBar = document.getElementById("upload-progress-bar");
     const progressStatus = document.getElementById("progress-status");
@@ -28,18 +30,77 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Navigation and Panels
     const navDashboardLink = document.getElementById("nav-dashboard-link");
+    const navRulesLink = document.getElementById("nav-rules-link");
     const navTimelineLink = document.getElementById("nav-timeline-link");
     const navReportLink = document.getElementById("nav-report-link");
     const timelineContainer = document.getElementById("timeline-container");
     const reportContainer = document.getElementById("report-container");
+    const rulesListContainer = document.getElementById("rules-list-container");
+    const rulesCount = document.getElementById("rules-count");
     
     // Actions
+    const btnBrowseFile = document.getElementById("btn-browse-file");
+    const btnBrowseFolder = document.getElementById("btn-browse-folder");
     const btnDownloadPdf = document.getElementById("btn-download-pdf");
     const btnDownloadMd = document.getElementById("btn-download-md");
     const btnAnalyzeNew = document.getElementById("btn-analyze-new");
 
-    // --- Drag and Drop File Upload ---
-    logDropzone.addEventListener("click", () => fileInput.click());
+    // --- Init ---
+    loadRulesDatabase();
+
+    // --- Navigation ---
+    navDashboardLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        switchNavigation(navDashboardLink);
+        rulesWorkspace.classList.add("hidden");
+        if (currentSessionId) {
+            uploadWorkspace.classList.add("hidden");
+            resultsWorkspace.classList.remove("hidden");
+        } else {
+            resultsWorkspace.classList.add("hidden");
+            uploadWorkspace.classList.remove("hidden");
+        }
+    });
+
+    navRulesLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        switchNavigation(navRulesLink);
+        uploadWorkspace.classList.add("hidden");
+        resultsWorkspace.classList.add("hidden");
+        rulesWorkspace.classList.remove("hidden");
+        loadRulesDatabase();
+    });
+
+    // Dummy scroll navigation handlers
+    navTimelineLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (navTimelineLink.classList.contains("disabled")) return;
+        document.getElementById("panel-timeline").scrollIntoView({ behavior: "smooth" });
+    });
+
+    navReportLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (navReportLink.classList.contains("disabled")) return;
+        document.getElementById("panel-report").scrollIntoView({ behavior: "smooth" });
+    });
+
+    function switchNavigation(activeLink) {
+        document.querySelectorAll(".sidebar-nav .nav-item").forEach(item => {
+            item.classList.remove("active");
+        });
+        activeLink.classList.add("active");
+    }
+
+    // --- File & Folder Picker Uploads ---
+    btnBrowseFile.addEventListener("click", (e) => {
+        e.stopPropagation();
+        fileInput.click();
+    });
+
+    btnBrowseFolder.addEventListener("click", (e) => {
+        e.stopPropagation();
+        folderInput.click();
+    });
 
     logDropzone.addEventListener("dragover", (e) => {
         e.preventDefault();
@@ -54,38 +115,48 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         logDropzone.classList.remove("dragover");
         if (e.dataTransfer.files.length > 0) {
-            handleFileUpload(e.dataTransfer.files[0]);
+            // Drag and drop folders or files
+            handleFilesUpload(e.dataTransfer.files);
         }
     });
 
     fileInput.addEventListener("change", (e) => {
         if (e.target.files.length > 0) {
-            handleFileUpload(e.target.files[0]);
+            handleFilesUpload(e.target.files);
         }
     });
 
-    function handleFileUpload(file) {
-        if (!file.name.endsWith(".zip")) {
-            alert("Error: Only ZIP files are supported.");
-            return;
+    folderInput.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+            handleFilesUpload(e.target.files);
         }
+    });
 
+    function handleFilesUpload(fileList) {
         // Show progress UI, hide upload details
         logDropzone.classList.add("hidden");
         uploadProgressContainer.classList.remove("hidden");
-        updateProgress(10, "Uploading zip archive...", stepUpload);
+        updateProgress(10, "Uploading logs...", stepUpload);
 
         const formData = new FormData();
-        formData.append("file", file);
+        
+        // Append all selected files
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList[i];
+            
+            // Reconstruct directory paths if present (from folder pickers)
+            // HTML5 provides webkitRelativePath for directory uploads
+            const path = file.webkitRelativePath || file.name;
+            formData.append("files", file, path);
+        }
 
-        // API Upload Request with manual step simulation for extraction and parsing
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/api/upload", true);
 
         xhr.upload.onprogress = (e) => {
             if (e.lengthComputable) {
-                const percent = Math.round((e.loaded / e.total) * 40); // upload constitutes 40% of loading bar
-                updateProgress(percent, `Uploading log archive (${percent}%)`, stepUpload);
+                const percent = Math.round((e.loaded / e.total) * 40);
+                updateProgress(percent, `Uploading log files (${percent}%)`, stepUpload);
             }
         };
 
@@ -94,17 +165,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 const response = JSON.parse(xhr.responseText);
                 currentSessionId = response.session_id;
                 
-                // Simulate fast backend steps UI progress
+                // Extraction and analysis steps progress bar mapping
                 setTimeout(() => {
-                    updateProgress(60, "Extracting log contents...", stepExtract);
+                    updateProgress(60, "Scanning files & directories...", stepExtract);
                     setTimeout(() => {
-                        updateProgress(80, "Parsing files & mapping streams...", stepParse);
+                        updateProgress(80, "Running stream parsing and timestamps alignment...", stepParse);
                         setTimeout(() => {
-                            updateProgress(100, "Correlating logs & generating report...", stepAnalyze);
+                            let analyzeText = "Executing heuristics & self-learning dynamic rules...";
+                            if (response.new_learned_rules > 0) {
+                                analyzeText = `Self-evolved engine! Added ${response.new_learned_rules} new rules...`;
+                            }
+                            updateProgress(100, analyzeText, stepAnalyze);
                             setTimeout(() => {
-                                // Transition to Results Dashboard
                                 loadReportResults(currentSessionId);
-                            }, 500);
+                                loadRulesDatabase(); // Refresh rules to show learned items
+                            }, 800);
                         }, 500);
                     }, 500);
                 }, 500);
@@ -131,7 +206,6 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelectorAll(".step-indicator").forEach(s => s.classList.remove("active"));
             activeStep.classList.add("active");
             
-            // Mark previous steps complete
             if (activeStep === stepExtract) {
                 stepUpload.classList.add("complete");
             } else if (activeStep === stepParse) {
@@ -155,6 +229,8 @@ document.addEventListener("DOMContentLoaded", () => {
             s.classList.remove("active", "complete");
         });
         stepUpload.classList.add("active");
+        fileInput.value = "";
+        folderInput.value = "";
     }
 
     // --- Load analysis report from backend ---
@@ -165,32 +241,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 return res.json();
             })
             .then(data => {
-                // Update navigation state
                 document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("disabled"));
                 
-                // Update metrics counters
                 metricCrashes.innerText = data.summary.crashes_count;
                 metricFailovers.innerText = data.summary.failovers_count;
                 metricErrors.innerText = data.summary.http_errors_count;
                 metricEntries.innerText = data.timeline.length;
 
-                // Adjust Metrics card colors dynamically
                 if (data.summary.crashes_count > 0) {
                     metricCrashes.parentElement.parentElement.classList.add("critical");
+                } else {
+                    metricCrashes.parentElement.parentElement.classList.remove("critical");
                 }
 
-                // Render Report Markdown
                 renderReport(data.markdown_report);
 
-                // Populate Timeline
                 originalTimeline = data.timeline;
                 renderTimeline(originalTimeline);
 
-                // Switch visible workspaces
                 uploadWorkspace.classList.add("hidden");
+                rulesWorkspace.classList.add("hidden");
                 resultsWorkspace.classList.remove("hidden");
+                switchNavigation(navDashboardLink);
 
-                // Scroll to top
                 document.querySelector(".main-content").scrollTop = 0;
             })
             .catch(err => {
@@ -200,9 +273,53 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
+    // --- Render Rules Knowledge base list ---
+    function loadRulesDatabase() {
+        fetch("/api/rules")
+            .then(res => res.json())
+            .then(rules => {
+                rulesCount.innerText = `${rules.length} Active Rules`;
+                rulesListContainer.innerHTML = "";
+                
+                if (rules.length === 0) {
+                    rulesListContainer.innerHTML = `<div class="text-center text-muted" style="padding: 40px 0;">No active rules registered in database.</div>`;
+                    return;
+                }
+
+                rules.forEach(rule => {
+                    const node = document.createElement("div");
+                    node.className = "rule-item";
+                    
+                    const isLearned = rule.type === "learned";
+                    const typeText = isLearned ? "🤖 Self-Learned" : "System Static";
+                    const typeClass = isLearned ? "learned" : "static";
+
+                    // Escape regex patterns for display
+                    const escapedPattern = escapeHtml(rule.patterns.join(" | "));
+
+                    node.innerHTML = `
+                        <div class="rule-header">
+                            <div class="rule-title">
+                                ${isLearned ? '🤖' : '⚙️'} ${escapeHtml(rule.name)}
+                            </div>
+                            <div class="rule-meta-badges">
+                                <span class="rule-type-badge ${typeClass}">${typeText}</span>
+                                <span class="rule-severity ${rule.severity}">${rule.severity}</span>
+                            </div>
+                        </div>
+                        <div class="rule-desc">${escapeHtml(rule.description)}</div>
+                        <div class="rule-pattern">Regex: <code>${escapedPattern}</code></div>
+                        <div class="rule-remediation"><strong>Remediation:</strong> ${escapeHtml(rule.remediation)}</div>
+                    `;
+                    rulesListContainer.appendChild(node);
+                });
+            })
+            .catch(err => console.error("Error loading rules base: ", err));
+    }
+
     // --- Preprocess alert boxes & render Markdown ---
-    function preprocessMarkdown(md) {
-        // Formats GitHub blockquotes (> [!NOTE]) into inline alert classes
+    function preprocessMarkdown(markdownText) {
+        let md = markdownText;
         md = md.replace(/^>\s+\[!NOTE\]\s*\n((?:>.*\n?)*)/gim, (m, p1) => {
             const clean = p1.replace(/^>\s?/gm, '');
             return `<div class="alert alert-note">${clean}</div>`;
@@ -226,7 +343,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const cleanMarkdown = preprocessMarkdown(markdownText);
         reportContainer.innerHTML = marked.parse(cleanMarkdown);
         
-        // Render Mermaid Diagrams if present
         try {
             mermaid.init(undefined, document.querySelectorAll(".mermaid"));
         } catch (e) {
@@ -238,7 +354,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderTimeline(entries) {
         timelineContainer.innerHTML = "";
         
-        // Apply active filter
         let filtered = entries;
         if (activeFilter === "CRITICAL") {
             filtered = entries.filter(e => e.log_level === "CRITICAL" || e.log_level === "ERROR" && e.metadata.is_crash);
@@ -257,7 +372,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const node = document.createElement("div");
             node.className = `timeline-node ${entry.log_level}`;
             
-            // Set indicator icon
             let icon = '<i class="fa-solid fa-info"></i>';
             if (entry.log_level === "CRITICAL" || (entry.log_level === "ERROR" && entry.metadata.is_crash)) {
                 icon = '<i class="fa-solid fa-triangle-exclamation"></i>';
@@ -267,7 +381,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 icon = '<i class="fa-solid fa-shuffle"></i>';
             }
 
-            // Simple timestamp display
             const dt = new Date(entry.timestamp);
             const tsStr = dt.toISOString().replace('T', ' ').substring(0, 19);
 
@@ -282,7 +395,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
             `;
             
-            // Expand details codeblock on click
             node.querySelector(".timeline-content").addEventListener("click", () => {
                 const contentDiv = node.querySelector(".timeline-content");
                 let detailBlock = contentDiv.querySelector(".timeline-details");
@@ -295,6 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     let metaInfo = `Log Level: ${entry.log_level}\nSource File: ${entry.source_file}\n`;
                     if (entry.metadata.client_ip) metaInfo += `Client IP: ${entry.metadata.client_ip}\n`;
                     if (entry.metadata.status_code) metaInfo += `HTTP Code: ${entry.metadata.status_code}\n`;
+                    if (entry.metadata.pattern_id) metaInfo += `Matched Rule ID: ${entry.metadata.pattern_id}\n`;
                     
                     detailBlock.innerHTML = `
                         <strong style="color:var(--accent-blue)">Metadata:</strong>
@@ -345,9 +458,11 @@ document.addEventListener("DOMContentLoaded", () => {
         originalTimeline = [];
         resetUploadUI();
         resultsWorkspace.classList.add("hidden");
+        rulesWorkspace.classList.add("hidden");
         uploadWorkspace.classList.remove("hidden");
+        switchNavigation(navDashboardLink);
         document.querySelectorAll(".nav-item").forEach(el => {
-            if (el.id !== "nav-dashboard-link") el.classList.add("disabled");
+            if (el.id !== "nav-dashboard-link" && el.id !== "nav-rules-link") el.classList.add("disabled");
         });
     });
 });

@@ -25,17 +25,22 @@
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <div class="sidebar-logo">
-                <i class="fa-solid fa-microchip-heading logo-icon"></i>
-                <span class="logo-text">RCA <span class="logo-sub">Diagnostic</span></span>
+                <img src="assets/logo_small.png" alt="Magic Software" class="logo-img">
+                <span class="logo-text">RCA <span class="logo-sub">Hub</span></span>
             </div>
             <nav class="sidebar-nav">
                 <a href="#" class="nav-item active" id="nav-dashboard-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="#" class="nav-item" id="nav-rules-link"><i class="fa-solid fa-graduation-cap"></i> Rules Engine</a>
                 <a href="#" class="nav-item disabled" id="nav-timeline-link"><i class="fa-solid fa-timeline"></i> Timeline</a>
                 <a href="#" class="nav-item disabled" id="nav-report-link"><i class="fa-solid fa-file-invoice"></i> Analysis Report</a>
             </nav>
             <div class="sidebar-footer">
-                <span class="footer-label">Internal R&D / Support Utility</span>
-                <span class="footer-version">v1.0.0</span>
+                <div class="credits-footer">
+                    <p class="credit-author">Engineered by <strong>Aniruddh Potdar</strong></p>
+                    <p class="credit-company">Magic Software Enterprises <span class="matrix-text">(A MATRIX Company)</span></p>
+                    <p class="credit-confidential">INTERNAL USE ONLY • CONFIDENTIAL</p>
+                </div>
+                <span class="footer-version">v1.1.0 (Auto-Learning)</span>
             </div>
         </aside>
 
@@ -58,16 +63,23 @@
                 <div class="card glass upload-card">
                     <div class="upload-dropzone" id="log-dropzone">
                         <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
-                        <h3>Analyze Log Archive</h3>
-                        <p>Drag and drop a log ZIP file, or click to browse</p>
-                        <span class="upload-hint">Supports ZIP containing Redis, Sentinel, Ingress & Application logs</span>
+                        <h3>Analyze Log Directory or Archive</h3>
+                        <p>Drag and drop a ZIP file or log folder, or select a browse option below</p>
+                        
+                        <div class="upload-actions">
+                            <button class="upload-btn primary" id="btn-browse-file"><i class="fa-solid fa-file-zipper"></i> Browse ZIP</button>
+                            <button class="upload-btn" id="btn-browse-folder"><i class="fa-solid fa-folder-open"></i> Browse Folder</button>
+                        </div>
+                        
+                        <span class="upload-hint">Supports ZIP archives, individual logs, or directories containing logs</span>
                         <input type="file" id="file-input" accept=".zip" class="hidden-input">
+                        <input type="file" id="folder-input" webkitdirectory directory multiple class="hidden-input">
                     </div>
                     
                     <!-- Progress Container -->
                     <div class="progress-container hidden" id="upload-progress-container">
                         <div class="progress-header">
-                            <span id="progress-status">Uploading archive...</span>
+                            <span id="progress-status">Uploading files...</span>
                             <span id="progress-percentage">0%</span>
                         </div>
                         <div class="progress-bar-wrapper">
@@ -79,6 +91,19 @@
                             <div class="step-indicator" id="step-parse"><i class="fa-solid fa-code-branch"></i> Parse</div>
                             <div class="step-indicator" id="step-analyze"><i class="fa-solid fa-brain"></i> Analyze</div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rules Database Workspace -->
+            <section class="workspace-section hidden" id="rules-workspace">
+                <div class="card glass rules-card">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-graduation-cap"></i> Dynamic Rules Engine Database</h2>
+                        <span class="rules-count-badge" id="rules-count">0 Rules Active</span>
+                    </div>
+                    <div class="rules-list-area" id="rules-list-container">
+                        <!-- Populated dynamically via JS -->
                     </div>
                 </div>
             </section>

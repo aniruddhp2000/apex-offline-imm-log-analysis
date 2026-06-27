@@ -1,23 +1,61 @@
+import os
+import json
 import datetime
 import re
 from typing import List, Dict, Any
 from backend.parser.base_parser import ParsedEntry
 
 class RCAHeuristics:
-    def __init__(self):
-        pass
+    def __init__(self, rules_path=None):
+        if rules_path is None:
+            rules_path = os.path.join("e:\\Tools\\imm-rca-utility", "backend", "config", "rules.json")
+        self.rules_path = os.path.abspath(rules_path)
+        self.rules = []
+        self._load_rules()
+
+    def _load_rules(self):
+        self.rules = []
+        if os.path.exists(self.rules_path):
+            try:
+                with open(self.rules_path, 'r', encoding='utf-8') as f:
+                    rules_list = json.load(f)
+                    for r in rules_list:
+                        compiled_patterns = []
+                        for p in r.get("patterns", []):
+                            try:
+                                compiled_patterns.append(re.compile(p, re.IGNORECASE))
+                            except Exception as e:
+                                print(f"Error compiling pattern {p}: {e}")
+                        
+                        self.rules.append({
+                            "rule_id": r["rule_id"],
+                            "name": r["name"],
+                            "severity": r["severity"],
+                            "description": r["description"],
+                            "remediation": r["remediation"],
+                            "type": r.get("type", "static"),
+                            "compiled_patterns": compiled_patterns
+                        })
+            except Exception as e:
+                print(f"Error loading rules from {self.rules_path}: {e}")
 
     def analyze(self, timeline: List[ParsedEntry]) -> Dict[str, Any]:
+        # Re-load rules to fetch newly learned entries
+        self._load_rules()
+
         crashes = []
         failovers = []
         http_errors = []
         app_errors = []
         
-        # Chronological index for scanning
+        # Track triggers of dynamic rules
+        rules_trigger_counts = {r["rule_id"]: 0 for r in self.rules}
+        rules_trigger_samples = {r["rule_id"]: [] for r in self.rules}
+        
         for i, entry in enumerate(timeline):
             msg_lower = entry.message.lower()
             
-            # 1. Identify Redis crashes
+            # 1. Standard structural Redis crash trace check (special handling for stack trace dumps)
             if entry.metadata.get("is_crash") or "crashed by signal" in msg_lower or "segmentation fault" in msg_lower:
                 crashes.append({
                     "index": i,
@@ -27,9 +65,10 @@ class RCAHeuristics:
                     "active_key": entry.metadata.get("active_key"),
                     "stack_trace": entry.metadata.get("stack_trace", [])
                 })
-                continue
+                # Elevate level
+                entry.log_level = "CRITICAL"
                 
-            # 2. Identify Sentinel failover events
+            # 2. Sentinel failover events (special handling)
             if entry.metadata.get("role") == "X" or "sentinel" in entry.source_file.lower():
                 if any(x in msg_lower for x in ["+switch-master", "+sdown", "+odown", "+reboot", "failover-end"]):
                     failovers.append({
@@ -38,16 +77,11 @@ class RCAHeuristics:
                         "timestamp": entry.timestamp,
                         "message": entry.message
                     })
-                    continue
             
-            # 3. Identify HTTP 5xx access errors
+            # 3. HTTP 5xx errors (special handling)
             is_http_5xx = False
-            if entry.metadata.get("type") == "alb_csv":
-                code = entry.metadata.get("response_code") or entry.metadata.get("server_response_code")
-                if code in ["500", "502", "503", "504"]:
-                    is_http_5xx = True
-            elif entry.metadata.get("type") == "ingress":
-                code = entry.metadata.get("status_code")
+            if entry.metadata.get("type") in ["alb_csv", "ingress"]:
+                code = entry.metadata.get("response_code") or entry.metadata.get("server_response_code") or entry.metadata.get("status_code")
                 if code in ["500", "502", "503", "504"]:
                     is_http_5xx = True
             elif " 500 " in entry.message or " 503 " in entry.message:
@@ -60,41 +94,56 @@ class RCAHeuristics:
                     "timestamp": entry.timestamp,
                     "message": entry.message
                 })
-                continue
+                entry.log_level = "ERROR"
+
+            # 4. Check against all dynamic rules (both static and learned)
+            for r in self.rules:
+                matched = False
+                for pattern in r["compiled_patterns"]:
+                    if pattern.search(entry.message):
+                        matched = True
+                        break
                 
-            # 4. Identify general application errors/exceptions
+                if matched:
+                    # Update count and list
+                    rules_trigger_counts[r["rule_id"]] += 1
+                    if len(rules_trigger_samples[r["rule_id"]]) < 5:
+                        rules_trigger_samples[r["rule_id"]].append(entry.message)
+                    # Elevate log level if rule severity is high
+                    if r["severity"] in ["ERROR", "CRITICAL"] and entry.log_level not in ["ERROR", "CRITICAL"]:
+                        entry.log_level = r["severity"]
+                        
+            # Store generic app errors/exceptions
             if entry.log_level in ["ERROR", "CRITICAL"]:
-                app_errors.append({
-                    "index": i,
-                    "entry": entry,
-                    "timestamp": entry.timestamp,
-                    "message": entry.message
-                })
+                # Only append if not already classified as HTTP error
+                if not is_http_5xx:
+                    app_errors.append({
+                        "index": i,
+                        "entry": entry,
+                        "timestamp": entry.timestamp,
+                        "message": entry.message
+                    })
 
         # --- Correlation Engine ---
         correlations = []
         for crash in crashes:
             crash_ts = crash["timestamp"]
             
-            # Find HTTP 5xx errors within +/- 3 minutes of the crash
             correlated_http = []
             for err in http_errors:
                 diff = abs((err["timestamp"] - crash_ts).total_seconds())
-                if diff <= 180: # 3 minutes
+                if diff <= 180:
                     correlated_http.append(err)
                     
-            # Find Sentinel failover steps within +/- 3 minutes of the crash
             correlated_sentinel = []
             for f in failovers:
                 diff = abs((f["timestamp"] - crash_ts).total_seconds())
                 if diff <= 180:
                     correlated_sentinel.append(f)
 
-            # Find Application errors (like Redis connection timeouts or READONLY write failures)
             correlated_app = []
             for err in app_errors:
                 diff = abs((err["timestamp"] - crash_ts).total_seconds())
-                # Allow a wider 5-minute window for client application recovery latency
                 if diff <= 300:
                     correlated_app.append(err)
             
@@ -109,7 +158,7 @@ class RCAHeuristics:
                 "app_errors_samples": [e["message"] for e in correlated_app[:5]]
             })
 
-        # --- Check for Recurring Patterns ---
+        # --- Recurring Pattern Check ---
         cycle_detected = False
         cycle_interval_seconds = 0
         if len(crashes) >= 2:
@@ -118,15 +167,16 @@ class RCAHeuristics:
                 diff = (crashes[idx]["timestamp"] - crashes[idx-1]["timestamp"]).total_seconds()
                 intervals.append(diff)
             
-            # If intervals are close to each other (stddev is small, or they are within 30s of a common interval)
             avg_interval = sum(intervals) / len(intervals)
-            # Standard check: does it look like a regular interval (e.g. ~600 seconds = 10 minutes)?
             if all(abs(intv - avg_interval) < 45 for intv in intervals):
                 cycle_detected = True
                 cycle_interval_seconds = avg_interval
 
-        # --- Generate Markdown Report ---
-        markdown_report = self._build_markdown_report(crashes, failovers, correlations, cycle_detected, cycle_interval_seconds, len(http_errors))
+        # --- Build Diagnostics Report ---
+        markdown_report = self._build_markdown_report(
+            crashes, failovers, correlations, cycle_detected, cycle_interval_seconds,
+            len(http_errors), rules_trigger_counts, rules_trigger_samples
+        )
 
         return {
             "crashes_count": len(crashes),
@@ -139,75 +189,109 @@ class RCAHeuristics:
             "markdown_report": markdown_report
         }
 
-    def _build_markdown_report(self, crashes: list, failovers: list, correlations: list, cycle_detected: bool, cycle_interval: float, total_http_errs: int) -> str:
+    def _build_markdown_report(self, crashes: list, failovers: list, correlations: list, cycle_detected: bool, cycle_interval: float, total_http_errs: int, trigger_counts: dict, trigger_samples: dict) -> str:
         report = []
-        report.append("# Automated Log Root Cause Analysis (RCA) Report")
+        report.append("# Automated System Root Cause Analysis (RCA) Report")
         report.append(f"*Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n")
         
-        # Executive Summary Alert Box
+        # Executive Summary
         report.append("## Executive Summary")
         if crashes:
             report.append("> [!CRITICAL]\n"
-                          f"> The analysis engine detected **{len(crashes)} Redis database process crashes** (Segmentation Fault / Signal 11).\n"
-                          f"> Total load balancer HTTP 5xx errors recorded: **{total_http_errs}**.")
+                          f"> The engine identified **{len(crashes)} database process crashes** (SIGSEGV / Signal 11).\n"
+                          f"> Load balancer logs recorded **{total_http_errs} HTTP 5xx client errors**.")
         else:
-            report.append("> [!NOTE]\n"
-                          "> No database crashes were detected. Reviewing general application and connectivity log signatures.")
+            report.append("> [!IMPORTANT]\n"
+                          f"> No master database crashes were detected. However, **{total_http_errs} client-facing HTTP 5xx errors** were scanned.")
 
-        # Incident Analysis
-        report.append("\n## Chronological Incident Correlation")
-        for idx, corr in enumerate(correlations, 1):
-            jst_time = corr["crash_time"] + datetime.timedelta(hours=9)
-            report.append(f"### Incident Event #{idx}")
-            report.append(f"* **UTC Time**: `{corr['crash_time'].strftime('%Y-%m-%d %H:%M:%S')}`")
-            report.append(f"* **Local Time (JST)**: `{jst_time.strftime('%Y-%m-%d %H:%M:%S')}`")
-            report.append(f"* **Crashed File Source**: `{corr['crash_file']}`")
-            if corr["active_key"]:
-                report.append(f"* **Active Database Key**: `{corr['active_key']}`")
+        # Incident Correlation
+        if correlations:
+            report.append("\n## Chronological Incident Correlation")
+            for idx, corr in enumerate(correlations, 1):
+                jst_time = corr["crash_time"] + datetime.timedelta(hours=9)
+                report.append(f"### Incident Event #{idx}")
+                report.append(f"* **UTC Time**: `{corr['crash_time'].strftime('%Y-%m-%d %H:%M:%S')}`")
+                report.append(f"* **Local Time (JST)**: `{jst_time.strftime('%Y-%m-%d %H:%M:%S')}`")
+                report.append(f"* **Crashed File Source**: `{corr['crash_file']}`")
+                if corr["active_key"]:
+                    report.append(f"* **Active Database Key**: `{corr['active_key']}`")
+                report.append(f"* **Correlated Client HTTP Errors**: `{corr['http_errors_count']}` errors occurred during the failover transition.")
                 
-            report.append(f"* **Correlated Client HTTP Errors**: `{corr['http_errors_count']}` errors occurred during the failover transition.")
-            
-            if corr["stack_trace"]:
-                report.append("\n#### Stack Trace Header")
-                report.append("```")
-                for frame in corr["stack_trace"][:6]:
-                    report.append(frame)
-                report.append("```")
-            
-            if corr["sentinel_events"]:
-                report.append("\n#### Sentinel Failover Progression")
-                report.append("```")
-                for f in corr["sentinel_events"][:5]:
-                    report.append(f)
-                report.append("```")
-            report.append("---")
+                if corr["stack_trace"]:
+                    report.append("\n#### Stack Trace Header")
+                    report.append("```")
+                    for frame in corr["stack_trace"][:6]:
+                        report.append(frame)
+                    report.append("```")
+                
+                if corr["sentinel_events"]:
+                    report.append("\n#### Sentinel Failover Progression")
+                    report.append("```")
+                    for f in corr["sentinel_events"][:5]:
+                        report.append(f)
+                    report.append("```")
+                report.append("---")
 
-        # Anomaly Details & Recursion
         if cycle_detected:
             mins = int(cycle_interval // 60)
             report.append("\n## Periodic / Cycle Pattern Analysis")
             report.append("> [!WARNING]\n"
-                          f"> **Recurring Cycle Detected**: Crashes are repeating at a regular interval of approximately **{mins} minutes**.\n"
-                          "> This signature strongly implies the trigger is a **scheduled background job, daemon process, or cron flow** in the client application (e.g. Magic xpi worker status loop).")
+                          f"> **Recurring Outage Cycle**: Failovers repeat at a regular interval of **{mins} minutes**.\n"
+                          "> Suspect client-side scheduled job, sync loop, or cron utility triggers.")
+
+        # Rules Engine diagnostics table
+        report.append("\n## Rules Engine Diagnostic Summary")
+        report.append("The engine evaluated logs against both system static rules and active self-learned patterns:\n")
+        report.append("| Rule ID | Rule Name | Type | Severity | Triggers Count | Status |")
+        report.append("| --- | --- | --- | --- | --- | --- |")
+        
+        has_learned_rules = False
+        for r in self.rules:
+            count = trigger_counts.get(r["rule_id"], 0)
+            status = "Inactive"
+            if count > 0:
+                status = "ACTIVE TRIGGER"
+            r_type = r["type"].upper()
+            if r_type == "LEARNED":
+                has_learned_rules = True
+                r_type = "🤖 SELF-LEARNED"
+                
+            report.append(f"| {r['rule_id']} | {r['name']} | {r_type} | {r['severity']} | {count} | {status} |")
+
+        # Display details of self-learned rules
+        if has_learned_rules:
+            report.append("\n### 🤖 Self-Evolved Rules Details")
+            report.append("The system encountered new unrecognized log signatures, automatically extracted their regex patterns, and upgraded its diagnostics database on-the-fly:")
+            for r in self.rules:
+                if r["type"] == "learned" and trigger_counts.get(r["rule_id"], 0) > 0:
+                    report.append(f"\n#### Rule: {r['name']} ({r['rule_id']})")
+                    report.append(f"* **Description**: {r['description']}")
+                    report.append(f"* **Regex Pattern**: `{(r['patterns'][0] if r['patterns'] else '')}`")
+                    report.append(f"* **Remediation Suggestion**: {r['remediation']}")
+                    if trigger_samples.get(r["rule_id"]):
+                        report.append("* **Example Log Traces**:")
+                        report.append("  ```")
+                        for sample in trigger_samples[r["rule_id"]][:2]:
+                            report.append(f"  {sample}")
+                        report.append("  ```")
 
         # Sequence Diagram
-        report.append("\n## System Failover Sequence Diagram")
+        report.append("\n## System Sequence Diagram")
         report.append("```mermaid\nsequenceDiagram\n    participant Client as Client Apps / ALB\n    participant Master as Redis Master (Active)\n    participant Sentinel as Redis Sentinels\n    participant Replica as Redis Replicas\n")
-        report.append("    Note over Master: Flow sets null value in JSON\n    Master->>Master: Process Crashes (SIGSEGV)\n    Sentinel->>Sentinel: Detects Offline (+sdown/+odown)\n    Note over Client, Master: Requests fail / HTTP 500 logged\n    Sentinel->>Replica: Promotes Replica to Master\n    Replica->>Replica: Accepts connections (+switch-master)\n    Note over Client: Operations automatically resume\n```")
+        report.append("    Note over Master: System writes values matching rules\n    Master->>Master: Process exception or crash\n    Sentinel->>Sentinel: Detects Offline (+sdown/+odown)\n    Note over Client, Master: Requests fail / HTTP 5xx logged\n    Sentinel->>Replica: Promotes Replica to Master\n    Replica->>Replica: Accepts connections (+switch-master)\n    Note over Client: Operations automatically resume\n```")
 
-        # Technical Root Cause
-        report.append("\n## Technical Root Cause Explanation")
-        report.append("The crashes occur because of an internal memory violation in the **RediSearch** module (`redisearch.so`). "
-                      "Specifically, when an application writes or modifies a key containing complex data structures (like RedisJSON `JSON.SET` commands), "
-                      "the update generates a keyspace notification callback intercepted by RediSearch. "
-                      "If the updated JSON document contains `null` values inside fields indexed as tags (such as `stepId: null` or `stepName: null`), "
-                      "the old RediSearch parser code does not check for null safely. It attempts to serialize this uninitialized string value using `WriteVarint`, "
-                      "triggering a null pointer dereference (`Accessing address: (nil)`) and crashing the entire Redis process with signal 11.")
-
-        # Recommendations
-        report.append("\n## Remediation & Actions")
-        report.append("1. **Upgrade Redis Stack Modules**: Upgrade the IMM database image to a newer, stable version of **Redis Stack** (specifically RediSearch `2.8` or `2.10+`). These versions resolve null pointer parsing bugs in JSON indexing.\n"
-                      "2. **Workaround - String Sanitization**: Modify client application flows to avoid writing JSON `null` fields. Instead, exclude these keys entirely or represent them as empty strings `\"\"`.\n"
-                      "3. **OS Memory Overcommit**: Set `vm.overcommit_memory = 1` on all database host nodes to ensure the OS never terminates the Redis process during background memory fork saves (`bgsave` / `bgrewriteaof`).")
+        # Technical Root Cause & Remediation Guidelines
+        report.append("\n## Suspected Root Cause & Remediation Actions")
         
+        # Dynamically append remediations based on active rules
+        triggered_remediations = []
+        for r in self.rules:
+            if trigger_counts.get(r["rule_id"], 0) > 0:
+                triggered_remediations.append(f"* **[{r['name']}]**: {r['remediation']}")
+
+        if triggered_remediations:
+            report.append("\n".join(triggered_remediations))
+        else:
+            report.append("No active errors or crashes matched registered rules. Check the raw logs using the interactive timeline.")
+
         return "\n".join(report)
