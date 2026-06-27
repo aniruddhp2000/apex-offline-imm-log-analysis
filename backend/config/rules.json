@@ -2096,5 +2096,214 @@
     "description": "Auto-learned exception signature detected in logs. Occurred 1 times during incident analysis.",
     "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
     "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-21EEA258",
+    "name": "Learned Exception: handleError",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+INFO\\\\s+\\[main\\]\\\\s+o\\.s\\.i\\.e\\.EventDrivenConsumer\\\\s+\\[EventDrivenConsumer\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Adding\\\\s+\\{service\\-activator:errorMessagesRouter\\.handleError\\.serviceActivator\\}\\\\s+as\\\\s+a\\\\s+subscriber\\\\s+to\\\\s+the\\\\s+'errorChannel'\\\\s+channel"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 43 times during incident analysis.",
+    "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-03F01333",
+    "name": "Learned System Issue: ,\\\\+\\+INFO\\+\\[main\\]\\+o\\.s\\.i\\.c\\.Direct...",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+INFO\\\\s+\\[main\\]\\\\s+o\\.s\\.i\\.c\\.DirectChannel\\\\s+\\[AbstractSubscribableChannel\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Channel\\\\s+'org\\.springframework\\.context\\.annotation\\.AnnotationConfigApplicationContext@\\\\d\\+ad\\\\d\\+c\\.errorChannel'\\\\s+has\\\\s+\\\\d\\+\\\\s+subscriber\\(s\\)\\."
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 105 times during incident analysis.",
+    "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-263095E4",
+    "name": "Learned Exception: handleError",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+INFO\\\\s+\\[main\\]\\\\s+o\\.s\\.i\\.e\\.EventDrivenConsumer\\\\s+\\[AbstractEndpoint\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+started\\\\s+errorMessagesRouter\\.handleError\\.serviceActivator"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 43 times during incident analysis.",
+    "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-629D248A",
+    "name": "Learned System Issue: ,\\\\+\\+INFO\\+\\[main\\]\\+o\\.s\\.i\\.e\\.EventD...",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+INFO\\\\s+\\[main\\]\\\\s+o\\.s\\.i\\.e\\.EventDrivenConsumer\\\\s+\\[EventDrivenConsumer\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Adding\\\\s+\\{service\\-activator\\}\\\\s+as\\\\s+a\\\\s+subscriber\\\\s+to\\\\s+the\\\\s+'errorChannel'\\\\s+channel"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 86 times during incident analysis.",
+    "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-A115DF64",
+    "name": "Learned Exception: handleError",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+INFO\\\\s+\\[main\\]\\\\s+o\\.s\\.i\\.e\\.EventDrivenConsumer\\\\s+\\[AbstractEndpoint\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+started\\\\s+errorMessagesRouter\\.handleError\\.serviceActivator\\#\\\\d\\+"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 86 times during incident analysis.",
+    "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-B15FE717",
+    "name": "Learned System Issue: ,\\\\+\\+INFO\\+\\[main\\]\\+o\\.s\\.i\\.c\\.Direct...",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+INFO\\\\s+\\[main\\]\\\\s+o\\.s\\.i\\.c\\.DirectChannel\\\\s+\\[AbstractSubscribableChannel\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Channel\\\\s+'org\\.springframework\\.context\\.annotation\\.AnnotationConfigApplicationContext@\\\\d\\+de\\\\d\\+\\.errorChannel'\\\\s+has\\\\s+\\\\d\\+\\\\s+subscriber\\(s\\)\\."
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 21 times during incident analysis.",
+    "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-830A22EB",
+    "name": "Learned Exception: RemoteStepInvokeException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.StepStub\\\\s+\\[StepStub\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+TCP/IP\\\\s+connection\\\\s+to\\\\s+the\\\\s+host\\\\s+\\\\d\\+\\.\\\\d\\+\\.\\\\d\\+\\.\\\\d\\+,\\\\s+port\\\\s+\\\\d\\+\\\\s+has\\\\s+failed\\.\\\\s+Error:\\\\s+\"connect\\\\s+timed\\\\s+out\\.\\\\s+Verify\\\\s+the\\\\s+connection\\\\s+properties\\.\\\\s+Make\\\\s+sure\\\\s+that\\\\s+an\\\\s+instance\\\\s+of\\\\s+SQL\\\\s+Server\\\\s+is\\\\s+running\\\\s+on\\\\s+the\\\\s+host\\\\s+and\\\\s+accepting\\\\s+TCP/IP\\\\s+connections\\\\s+at\\\\s+the\\\\s+port\\.\\\\s+Make\\\\s+sure\\\\s+that\\\\s+TCP\\\\s+connections\\\\s+to\\\\s+the\\\\s+port\\\\s+are\\\\s+not\\\\s+blocked\\\\s+by\\\\s+a\\\\s+firewall\\.\"\\.\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 4 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-EE19D43E",
+    "name": "Learned Exception: RemoteStepInvokeException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.RemoteStepInvoker\\\\s+\\[RemoteStepInvoker\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+TCP/IP\\\\s+connection\\\\s+to\\\\s+the\\\\s+host\\\\s+\\\\d\\+\\.\\\\d\\+\\.\\\\d\\+\\.\\\\d\\+,\\\\s+port\\\\s+\\\\d\\+\\\\s+has\\\\s+failed\\.\\\\s+Error:\\\\s+\"connect\\\\s+timed\\\\s+out\\.\\\\s+Verify\\\\s+the\\\\s+connection\\\\s+properties\\.\\\\s+Make\\\\s+sure\\\\s+that\\\\s+an\\\\s+instance\\\\s+of\\\\s+SQL\\\\s+Server\\\\s+is\\\\s+running\\\\s+on\\\\s+the\\\\s+host\\\\s+and\\\\s+accepting\\\\s+TCP/IP\\\\s+connections\\\\s+at\\\\s+the\\\\s+port\\.\\\\s+Make\\\\s+sure\\\\s+that\\\\s+TCP\\\\s+connections\\\\s+to\\\\s+the\\\\s+port\\\\s+are\\\\s+not\\\\s+blocked\\\\s+by\\\\s+a\\\\s+firewall\\.\"\\.\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Step\\\\s+invocation\\\\s+failed:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+TCP/IP\\\\s+connection\\\\s+to\\\\s+the\\\\s+host\\\\s+\\\\d\\+\\.\\\\d\\+\\.\\\\d\\+\\.\\\\d\\+,\\\\s+port\\\\s+\\\\d\\+\\\\s+has\\\\s+failed\\.\\\\s+Error:\\\\s+\"connect\\\\s+timed\\\\s+out\\.\\\\s+Verify\\\\s+the\\\\s+connection\\\\s+properties\\.\\\\s+Make\\\\s+sure\\\\s+that\\\\s+an\\\\s+instance\\\\s+of\\\\s+SQL\\\\s+Server\\\\s+is\\\\s+running\\\\s+on\\\\s+the\\\\s+host\\\\s+and\\\\s+accepting\\\\s+TCP/IP\\\\s+connections\\\\s+at\\\\s+the\\\\s+port\\.\\\\s+Make\\\\s+sure\\\\s+that\\\\s+TCP\\\\s+connections\\\\s+to\\\\s+the\\\\s+port\\\\s+are\\\\s+not\\\\s+blocked\\\\s+by\\\\s+a\\\\s+firewall\\.\"\\.\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)\\\\s+Caused\\\\s+by:\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+TCP/IP\\\\s+connection\\\\s+to\\\\s+the\\\\s+host\\\\s+\\\\d\\+\\.\\\\d\\+\\.\\\\d\\+\\.\\\\d\\+,\\\\s+port\\\\s+\\\\d\\+\\\\s+has\\\\s+failed\\.\\\\s+Error:\\\\s+\"connect\\\\s+timed\\\\s+out\\.\\\\s+Verify\\\\s+the\\\\s+connection\\\\s+properties\\.\\\\s+Make\\\\s+sure\\\\s+that\\\\s+an\\\\s+instance\\\\s+of\\\\s+SQL\\\\s+Server\\\\s+is\\\\s+running\\\\s+on\\\\s+the\\\\s+host\\\\s+and\\\\s+accepting\\\\s+TCP/IP\\\\s+connections\\\\s+at\\\\s+the\\\\s+port\\.\\\\s+Make\\\\s+sure\\\\s+that\\\\s+TCP\\\\s+connections\\\\s+to\\\\s+the\\\\s+port\\\\s+are\\\\s+not\\\\s+blocked\\\\s+by\\\\s+a\\\\s+firewall\\.\"\\.\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+\\.\\.\\.\\\\s+\\\\d\\+\\\\s+common\\\\s+frames\\\\s+omitted"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 4 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-1C23D2A9",
+    "name": "Learned Exception: NoAvailableAgentConnectorException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.StepStub\\\\s+\\[StepStub\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.exceptions\\.NoAvailableAgentConnectorException:\\\\s+No\\\\s+available\\\\s+agent\\\\s+connector\\\\s+found\\\\s+for\\\\s+the\\\\s+agent:\\\\s+smcagent,\\\\s+add\\-on:\\\\s+JDBC\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.impl\\.AgentConnectorsManager\\.lambda\\$getAgentConnectorID\\$\\\\d\\+\\(AgentConnectorsManager\\.java:\\\\d\\+\\)\\\\s+at\\\\s+java\\.util\\.Optional\\.orElseThrow\\(Optional\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.impl\\.AgentConnectorsManager\\.getAgentConnectorID\\(AgentConnectorsManager\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.getAgentConnectorId\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 211 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-09B5500A",
+    "name": "Learned Exception: RemoteStepInvokeException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.RemoteStepInvoker\\\\s+\\[RemoteStepInvoker\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed:\\\\s+No\\\\s+available\\\\s+agent\\\\s+connector\\\\s+found\\\\s+for\\\\s+the\\\\s+agent:\\\\s+smcagent,\\\\s+add\\-on:\\\\s+JDBC\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Step\\\\s+invocation\\\\s+failed:\\\\s+No\\\\s+available\\\\s+agent\\\\s+connector\\\\s+found\\\\s+for\\\\s+the\\\\s+agent:\\\\s+smcagent,\\\\s+add\\-on:\\\\s+JDBC\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)\\\\s+Caused\\\\s+by:\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.exceptions\\.NoAvailableAgentConnectorException:\\\\s+No\\\\s+available\\\\s+agent\\\\s+connector\\\\s+found\\\\s+for\\\\s+the\\\\s+agent:\\\\s+smcagent,\\\\s+add\\-on:\\\\s+JDBC\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.impl\\.AgentConnectorsManager\\.lambda\\$getAgentConnectorID\\$\\\\d\\+\\(AgentConnectorsManager\\.java:\\\\d\\+\\)\\\\s+at\\\\s+java\\.util\\.Optional\\.orElseThrow\\(Optional\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.impl\\.AgentConnectorsManager\\.getAgentConnectorID\\(AgentConnectorsManager\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.getAgentConnectorId\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+\\.\\.\\.\\\\s+\\\\d\\+\\\\s+common\\\\s+frames\\\\s+omitted"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 211 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-281C26B2",
+    "name": "Learned Exception: NoAvailableAgentConnectorException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.StepStub\\\\s+\\[StepStub\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.exceptions\\.NoAvailableAgentConnectorException:\\\\s+No\\\\s+available\\\\s+agent\\\\s+connector\\\\s+found\\\\s+for\\\\s+the\\\\s+agent:\\\\s+smcagent,\\\\s+add\\-on:\\\\s+REST\\\\s+Client\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.impl\\.AgentConnectorsManager\\.lambda\\$getAgentConnectorID\\$\\\\d\\+\\(AgentConnectorsManager\\.java:\\\\d\\+\\)\\\\s+at\\\\s+java\\.util\\.Optional\\.orElseThrow\\(Optional\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.impl\\.AgentConnectorsManager\\.getAgentConnectorID\\(AgentConnectorsManager\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.getAgentConnectorId\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 133 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-AB9B8CFE",
+    "name": "Learned Exception: RemoteStepInvokeException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.RemoteStepInvoker\\\\s+\\[RemoteStepInvoker\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed:\\\\s+No\\\\s+available\\\\s+agent\\\\s+connector\\\\s+found\\\\s+for\\\\s+the\\\\s+agent:\\\\s+smcagent,\\\\s+add\\-on:\\\\s+REST\\\\s+Client\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Step\\\\s+invocation\\\\s+failed:\\\\s+No\\\\s+available\\\\s+agent\\\\s+connector\\\\s+found\\\\s+for\\\\s+the\\\\s+agent:\\\\s+smcagent,\\\\s+add\\-on:\\\\s+REST\\\\s+Client\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)\\\\s+Caused\\\\s+by:\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.exceptions\\.NoAvailableAgentConnectorException:\\\\s+No\\\\s+available\\\\s+agent\\\\s+connector\\\\s+found\\\\s+for\\\\s+the\\\\s+agent:\\\\s+smcagent,\\\\s+add\\-on:\\\\s+REST\\\\s+Client\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.impl\\.AgentConnectorsManager\\.lambda\\$getAgentConnectorID\\$\\\\d\\+\\(AgentConnectorsManager\\.java:\\\\d\\+\\)\\\\s+at\\\\s+java\\.util\\.Optional\\.orElseThrow\\(Optional\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.agentconnectors\\.manager\\.impl\\.AgentConnectorsManager\\.getAgentConnectorID\\(AgentConnectorsManager\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.getAgentConnectorId\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+\\.\\.\\.\\\\s+\\\\d\\+\\\\s+common\\\\s+frames\\\\s+omitted"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 133 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-0988F1DE",
+    "name": "Learned Exception: InvocationTimeoutException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+WARN\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.StepStub\\\\s+\\[StepStub\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed\\\\s+because\\\\s+of\\\\s+time\\\\s+limit\\\\s+com\\.magicsoftware\\.localagent\\.communication\\.util\\.exceptions\\.InvocationTimeoutException:\\\\s+Response\\\\s+message\\\\s+wait\\\\s+duration\\\\s+has\\\\s+expired\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.communication\\.util\\.ConversationSync\\.waitForMessageReceive\\(ConversationSync\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 466 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-A088D2AC",
+    "name": "Learned Exception: RemoteStepInvokeException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.RemoteStepInvoker\\\\s+\\[RemoteStepInvoker\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Response\\\\s+message\\\\s+wait\\\\s+duration\\\\s+has\\\\s+expired\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Response\\\\s+message\\\\s+wait\\\\s+duration\\\\s+has\\\\s+expired\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)\\\\s+Caused\\\\s+by:\\\\s+com\\.magicsoftware\\.localagent\\.communication\\.util\\.exceptions\\.InvocationTimeoutException:\\\\s+Response\\\\s+message\\\\s+wait\\\\s+duration\\\\s+has\\\\s+expired\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.communication\\.util\\.ConversationSync\\.waitForMessageReceive\\(ConversationSync\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+\\.\\.\\.\\\\s+\\\\d\\+\\\\s+common\\\\s+frames\\\\s+omitted"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 466 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-C6EE5440",
+    "name": "Learned Exception: RemoteStepInvokeException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.StepStub\\\\s+\\[StepStub\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+driver\\\\s+could\\\\s+not\\\\s+establish\\\\s+a\\\\s+secure\\\\s+connection\\\\s+to\\\\s+SQL\\\\s+Server\\\\s+by\\\\s+using\\\\s+Secure\\\\s+Sockets\\\\s+Layer\\\\s+\\(SSL\\)\\\\s+encryption\\.\\\\s+Error:\\\\s+\"SQL\\\\s+Server\\\\s+did\\\\s+not\\\\s+return\\\\s+a\\\\s+response\\.\\\\s+The\\\\s+connection\\\\s+has\\\\s+been\\\\s+closed\\.\\\\s+ClientConnectionId:c\\\\d\\+fc\\-\\\\d\\+f\\\\d\\+c\\-\\\\d\\+e\\\\d\\+\\-a\\\\d\\+fe\\-\\\\d\\+f\\\\d\\+a\\\\d\\+d\"\\.\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 1 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-0549FC73",
+    "name": "Learned Exception: RemoteStepInvokeException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.RemoteStepInvoker\\\\s+\\[RemoteStepInvoker\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+driver\\\\s+could\\\\s+not\\\\s+establish\\\\s+a\\\\s+secure\\\\s+connection\\\\s+to\\\\s+SQL\\\\s+Server\\\\s+by\\\\s+using\\\\s+Secure\\\\s+Sockets\\\\s+Layer\\\\s+\\(SSL\\)\\\\s+encryption\\.\\\\s+Error:\\\\s+\"SQL\\\\s+Server\\\\s+did\\\\s+not\\\\s+return\\\\s+a\\\\s+response\\.\\\\s+The\\\\s+connection\\\\s+has\\\\s+been\\\\s+closed\\.\\\\s+ClientConnectionId:c\\\\d\\+fc\\-\\\\d\\+f\\\\d\\+c\\-\\\\d\\+e\\\\d\\+\\-a\\\\d\\+fe\\-\\\\d\\+f\\\\d\\+a\\\\d\\+d\"\\.\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Step\\\\s+invocation\\\\s+failed:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+driver\\\\s+could\\\\s+not\\\\s+establish\\\\s+a\\\\s+secure\\\\s+connection\\\\s+to\\\\s+SQL\\\\s+Server\\\\s+by\\\\s+using\\\\s+Secure\\\\s+Sockets\\\\s+Layer\\\\s+\\(SSL\\)\\\\s+encryption\\.\\\\s+Error:\\\\s+\"SQL\\\\s+Server\\\\s+did\\\\s+not\\\\s+return\\\\s+a\\\\s+response\\.\\\\s+The\\\\s+connection\\\\s+has\\\\s+been\\\\s+closed\\.\\\\s+ClientConnectionId:c\\\\d\\+fc\\-\\\\d\\+f\\\\d\\+c\\-\\\\d\\+e\\\\d\\+\\-a\\\\d\\+fe\\-\\\\d\\+f\\\\d\\+a\\\\d\\+d\"\\.\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)\\\\s+Caused\\\\s+by:\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+driver\\\\s+could\\\\s+not\\\\s+establish\\\\s+a\\\\s+secure\\\\s+connection\\\\s+to\\\\s+SQL\\\\s+Server\\\\s+by\\\\s+using\\\\s+Secure\\\\s+Sockets\\\\s+Layer\\\\s+\\(SSL\\)\\\\s+encryption\\.\\\\s+Error:\\\\s+\"SQL\\\\s+Server\\\\s+did\\\\s+not\\\\s+return\\\\s+a\\\\s+response\\.\\\\s+The\\\\s+connection\\\\s+has\\\\s+been\\\\s+closed\\.\\\\s+ClientConnectionId:c\\\\d\\+fc\\-\\\\d\\+f\\\\d\\+c\\-\\\\d\\+e\\\\d\\+\\-a\\\\d\\+fe\\-\\\\d\\+f\\\\d\\+a\\\\d\\+d\"\\.\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+\\.\\.\\.\\\\s+\\\\d\\+\\\\s+common\\\\s+frames\\\\s+omitted"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 1 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-1113A6D2",
+    "name": "Learned Exception: RemoteStepInvokeException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.StepStub\\\\s+\\[StepStub\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+driver\\\\s+could\\\\s+not\\\\s+establish\\\\s+a\\\\s+secure\\\\s+connection\\\\s+to\\\\s+SQL\\\\s+Server\\\\s+by\\\\s+using\\\\s+Secure\\\\s+Sockets\\\\s+Layer\\\\s+\\(SSL\\)\\\\s+encryption\\.\\\\s+Error:\\\\s+\"SQL\\\\s+Server\\\\s+did\\\\s+not\\\\s+return\\\\s+a\\\\s+response\\.\\\\s+The\\\\s+connection\\\\s+has\\\\s+been\\\\s+closed\\.\\\\s+ClientConnectionId:\\\\d\\+f\\\\d\\+deb\\\\d\\+\\-f\\\\d\\+f\\\\d\\+\\-\\\\d\\+b\\-be\\\\d\\+\\-f\\\\d\\+a\\\\d\\+f\\\\d\\+\"\\.\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 1 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-13ED56A1",
+    "name": "Learned Exception: RemoteStepInvokeException",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+ERROR\\\\s+\\[Thread\\-\\\\d\\+\\]\\\\s+c\\.m\\.l\\.r\\.i\\.RemoteStepInvoker\\\\s+\\[RemoteStepInvoker\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Step\\\\s+invocation\\\\s+failed:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+driver\\\\s+could\\\\s+not\\\\s+establish\\\\s+a\\\\s+secure\\\\s+connection\\\\s+to\\\\s+SQL\\\\s+Server\\\\s+by\\\\s+using\\\\s+Secure\\\\s+Sockets\\\\s+Layer\\\\s+\\(SSL\\)\\\\s+encryption\\.\\\\s+Error:\\\\s+\"SQL\\\\s+Server\\\\s+did\\\\s+not\\\\s+return\\\\s+a\\\\s+response\\.\\\\s+The\\\\s+connection\\\\s+has\\\\s+been\\\\s+closed\\.\\\\s+ClientConnectionId:\\\\d\\+f\\\\d\\+deb\\\\d\\+\\-f\\\\d\\+f\\\\d\\+\\-\\\\d\\+b\\-be\\\\d\\+\\-f\\\\d\\+a\\\\d\\+f\\\\d\\+\"\\.\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Step\\\\s+invocation\\\\s+failed:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+driver\\\\s+could\\\\s+not\\\\s+establish\\\\s+a\\\\s+secure\\\\s+connection\\\\s+to\\\\s+SQL\\\\s+Server\\\\s+by\\\\s+using\\\\s+Secure\\\\s+Sockets\\\\s+Layer\\\\s+\\(SSL\\)\\\\s+encryption\\.\\\\s+Error:\\\\s+\"SQL\\\\s+Server\\\\s+did\\\\s+not\\\\s+return\\\\s+a\\\\s+response\\.\\\\s+The\\\\s+connection\\\\s+has\\\\s+been\\\\s+closed\\.\\\\s+ClientConnectionId:\\\\d\\+f\\\\d\\+deb\\\\d\\+\\-f\\\\d\\+f\\\\d\\+\\-\\\\d\\+b\\-be\\\\d\\+\\-f\\\\d\\+a\\\\d\\+f\\\\d\\+\"\\.\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.RemoteStepInvoker\\.remoteStepInvoke\\(RemoteStepInvoker\\.java:\\\\d\\+\\)\\\\s+Caused\\\\s+by:\\\\s+com\\.magicsoftware\\.localagent\\.exceptions\\.RemoteStepInvokeException:\\\\s+Getting\\\\s+database\\\\s+connection\\\\s+failed,\\\\s+cause:\\\\s+The\\\\s+driver\\\\s+could\\\\s+not\\\\s+establish\\\\s+a\\\\s+secure\\\\s+connection\\\\s+to\\\\s+SQL\\\\s+Server\\\\s+by\\\\s+using\\\\s+Secure\\\\s+Sockets\\\\s+Layer\\\\s+\\(SSL\\)\\\\s+encryption\\.\\\\s+Error:\\\\s+\"SQL\\\\s+Server\\\\s+did\\\\s+not\\\\s+return\\\\s+a\\\\s+response\\.\\\\s+The\\\\s+connection\\\\s+has\\\\s+been\\\\s+closed\\.\\\\s+ClientConnectionId:\\\\d\\+f\\\\d\\+deb\\\\d\\+\\-f\\\\d\\+f\\\\d\\+\\-\\\\d\\+b\\-be\\\\d\\+\\-f\\\\d\\+a\\\\d\\+f\\\\d\\+\"\\.\\\\s+at\\\\s+com\\.magicsoftware\\.localagent\\.remotestep\\.impl\\.StepStub\\.invoke\\(StepStub\\.java:\\\\d\\+\\)\\\\s+\\.\\.\\.\\\\s+\\\\d\\+\\\\s+common\\\\s+frames\\\\s+omitted"
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 1 times during incident analysis.",
+    "remediation": "Verify target host availability, check security group firewall rules, and validate local IMM connection pools.",
+    "type": "learned"
+  },
+  {
+    "rule_id": "LEARNED-ERR-C07C1A95",
+    "name": "Learned System Issue: ,\\\\+\\+INFO\\+\\[main\\]\\+o\\.s\\.i\\.c\\.Direct...",
+    "severity": "ERROR",
+    "patterns": [
+      ",\\\\d\\+\\\\s+INFO\\\\s+\\[main\\]\\\\s+o\\.s\\.i\\.c\\.DirectChannel\\\\s+\\[AbstractSubscribableChannel\\.java\\\\s+:\\\\s+\\\\d\\+\\]\\\\s+Channel\\\\s+'org\\.springframework\\.context\\.annotation\\.AnnotationConfigApplicationContext@\\\\d\\+c\\\\d\\+a\\\\d\\+\\.errorChannel'\\\\s+has\\\\s+\\\\d\\+\\\\s+subscriber\\(s\\)\\."
+    ],
+    "description": "Auto-learned exception signature detected in logs. Occurred 3 times during incident analysis.",
+    "remediation": "Review active flow runtime statistics, inspect trace logs for multi-line details, and check code parameters.",
+    "type": "learned"
   }
 ]
