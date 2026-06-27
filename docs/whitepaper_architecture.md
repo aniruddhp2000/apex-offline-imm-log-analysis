@@ -2,34 +2,34 @@
 
 **Document Ref**: FAANG-IMM-SAR-001  
 **Author**: Antigravity Technical Systems Architect  
-**Audience**: Support Operations, R&D Engineering, Devops  
+**Audience**: Support Operations, R&D Engineering, DevOps  
 **Status**: APPROVED / PRODUCTION-READY
 
 ---
 
 ## 1. Executive Summary & Vision
 
-In cloud-native high-availability environments, localized node anomalies and silent microservice crashes can propagate rapidly, leading to complete production outages. The **Log Diagnostic & Root Cause Analysis (RCA) Utility** was built to address a key operational problem: reducing the Mean Time to Resolution (MTTR) for multi-node deployments. 
+In cloud-native high-availability environments, localized node anomalies and silent microservice crashes can propagate rapidly, leading to complete production outages. The **Log Diagnostic & Root Cause Analysis (RCA) Utility** was built to address a key operational problem: reducing the Mean Time to Resolution (MTTR) for multi-node deployments.
 
-Rather than manually inspecting individual log streams, text trace files, and load balancer dumps, this tool introduces a unified platform. Users upload a log archive (ZIP file), and the backend automatically:
-1. Extracts and structures all log streams recursively.
-2. Identifies specific component log formats (Redis, Sentinel, Ingress, generic Log4j, etc.).
-3. Merges all events into a unified, chronological timeline.
-4. Evaluates anomalies and correlations using timeline sliding-window heuristics.
-5. Builds a comprehensive, interactive visual dashboard and a standardized Markdown/PDF report.
+This platform provides Support and R&D teams with a unified diagnostic interface. By dragging and dropping or browsing a log bundle (either a ZIP archive or a raw folder of files), users trigger an automatic, self-evolving analysis pipeline that:
+1. Reconstructs file hierarchies for uploads.
+2. Identifies and parses specialized log streams (Redis, Sentinel, Ingress, Log4j, etc.).
+3. Merges all entries chronologically across timezone deltas.
+4. Auto-detects anomalies, correlates crashes with client HTTP 500 error spikes, and calculates frequency cycles.
+5. **Self-Learns and Self-Upgrades**: Dynamically scans for unrecognized log structures, extracts error signatures, registers new diagnostic rules, and commits rules updates automatically under a local Git repository.
 
 ---
 
 ## 2. Design Patterns & Modularity
 
-The application was designed using **Clean Architecture** and SOLID design principles, maximizing code extensibility and maintainability.
+The application is structured using **Clean Architecture** and SOLID design principles, maximizing code extensibility.
 
 ```
 +-------------------------------------------------------+
 |                 Modern Glassmorphic UI                |
 |           (index.html / app.css / app.js)             |
 +---------------------------+---------------------------+
-                            | REST API
+                            | REST API (files/directories upload)
 +---------------------------v---------------------------+
 |                   FastAPI Router (app.py)             |
 +---------------------------+---------------------------+
@@ -50,9 +50,18 @@ The application was designed using **Clean Architecture** and SOLID design princ
 |  RedisParser  |   | GenericParser |   | ...Future...  |
 +-------+-------+   +-------+-------+   +-------+-------+
         |                   |                   |
-        +-------------------+-------------------+
-                            | Unified List[ParsedEntry]
-+---------------------------v---------------------------+
+        +---+---------------+---------------+
+            |
+            | List[ParsedEntry]
++-----------v-------------------------------------------+
+|            AI Rule Learner (rule_learner.py)          |
+|    - Timestamp Scanner -> updates parser_config.json  |
+|    - Exception Clusterer -> updates rules.json        |
+|    - Local Versioning -> Git Commit                   |
++-----------+-------------------------------------------+
+            |
+            | Evolved Configurations
++-----------v-------------------------------------------+
 |             Timeline Merger (timeline_merger.py)      |
 +---------------------------+---------------------------+
                             | Chronological List
@@ -67,43 +76,50 @@ The application was designed using **Clean Architecture** and SOLID design princ
 
 ### Key Design Patterns Implemented
 1. **Strategy Pattern (Log Parsing)**:
-   All log parsers inherit from the abstract class `BaseLogParser` (`backend/parser/base_parser.py`). When the discoverer identifies a file type (e.g. `redis`), it dynamically selects the corresponding parsing strategy (`RedisParser` or `GenericParser`). This allows Support engineers to easily register new parsers for other database or messaging queues (e.g. RabbitMQ, PostgreSQL) without touching core timeline merger or reporting logic.
-2. **Singleton-style Lifecycle Management**:
-   The `WorkspaceManager` manages sandbox directories. Every upload is assigned a standard UUID4 session, ensuring strict isolation between user uploads, preserving security, and preventing concurrent race conditions.
+   All log parsers inherit from the abstract class `BaseLogParser`. When the discoverer identifies a file, it dynamically assigns the corresponding parsing strategy.
+2. **Dynamic Database Configuration**:
+   Heuristics rules are decoupled from Python code and placed in `backend/config/rules.json`. The generic parser timestamp configurations are managed via `backend/config/parser_config.json`. This database-driven design enables the utility to dynamically update its rule base at runtime.
 
 ---
 
-## 3. High-Performance Timeline Merging & Normalization
+## 3. Self-Evolving & Self-Upgrading Core Engine
 
-Logs from high-availability clusters often originate from disparate hosts configured in different timezones (e.g. container times in UTC and host syslogs or local customer reports in JST/GMT+9).
+The diagnostic engine is capable of **autonomous evolution** when encountering unrecognized log data:
 
-To solve this timezone delta issue:
-* The parser converts incoming timestamps to neutral `datetime.datetime` objects.
-* The `TimelineMerger` normalizes these timestamps to naive structures representing a unified epoch space and sorts them chronologically.
-* When rendering the timeline, the frontend displays the unified UTC time alongside JST time (or local browser time) in parallel, allowing engineers to match logs precisely to the customer's reported incident window.
+### A. Dynamic Timestamp Pattern Discovery
+If logs are parsed incorrectly because of unregistered dates formats (e.g. customized localization), the `RuleLearner` scans the first few lines of the text. It uses regex scanners to detect date/time prefixes, compiles the appropriate pattern, maps it to a Python datetime format, and appends it to `parser_config.json`. The parser immediately reload its config and parses the file, resolving parsing mismatches dynamically.
+
+### B. Dynamic Exception Clustering
+When the analysis engine scans a timeline, it isolates unrecognized `ERROR` or `CRITICAL` log statements that do not match any static rules in `rules.json`. It runs the following extraction pipeline:
+1. **Variable Stripping**: Sanitizes strings by replacing dynamic parameters (hex codes, thread IDs, PIDs, date stamps, integer counters) with regex wildcards (e.g. `\d+`).
+2. **Deduplication**: Clusters identical sanitized signatures and computes frequency counts.
+3. **Rule Synthesizer**: Deduces a descriptive title (extracting exception class names like `TimeoutException` or base prefixes), maps a severity, outlines the pattern, and assigns default remediation tips (networking alerts for connection failures, memory flags for OOMs).
+4. **Rules Upgrade**: Appends the new rule to `rules.json`.
+
+### C. Local Version Control Tracking
+Whenever `rules.json` or `parser_config.json` is modified by the learner, the utility executes an automated child process to commit the changes to the local Git repository:
+```bash
+git add backend/config/rules.json backend/config/parser_config.json
+git commit -m "System Auto-Upgrade: Learned new diagnostics rules"
+```
+This ensures the utility logs all learned heuristics chronologically, preventing regressions and providing developer transparency.
 
 ---
 
-## 4. Anomaly Correlation Engine Heuristics
+## 4. Timezone Normalization & Cross-System Correlation
 
-The `RCAHeuristics` engine executes structural correlation rules:
-1. **Critical Node Signal Detector**:
-   Scans the timeline for high-severity keywords (e.g. `crashed by signal`, `segmentation fault`). It isolates the exact crashing instruction address and extracts the active memory key (e.g. `key 'WorkerData:1512'`) from the hex dump.
-2. **Failover Boundary Analyzer**:
-   Tracks Sentinel failover commands (`+switch-master`, `+sdown`, `+odown`). It records the master-to-replica transition time.
-3. **Sliding-Window Client Correlation**:
-   Upon detecting a master crash, the engine opens a **+/- 3-minute sliding window**. It queries the timeline for correlated HTTP 5xx codes (Ingress/ALB) and database write connection errors (application logs) occurring within this window.
-4. **Frequency Cycle Detector**:
-   Evaluates timestamps between successive crash events. If the delta between crashes is uniform (e.g., standard deviation is low and averages ~10 minutes), the system flags a **recurring schedule trigger**—pointing Support to check for a periodic flow or cron job.
+Logs from distributed clusters often span different timezones. The `TimelineMerger` normalizes timestamps into unified, naive datetime instances representing UTC. 
+
+The correlation engine scans for database process crashes (SIGSEGV/signal 11). Once a crash is located, it evaluates a **+/- 3-minute sliding window** to identify correlated HTTP 500 error spikes from ingress logs and database write connection timeouts from application logs. This provides automated confirmation of client-facing impact without manual timeline overlay.
 
 ---
 
 ## 5. Architectural Trade-offs & Decisions
 
 ### Trade-off: Headless Browser PDF Generation vs. Browser-Native Print API
-* **Decision**: We chose to implement a printable CSS layout (`@media print` rules inside `pdf_exporter.py` and `app.css`) that leverages the browser's native `window.print()` rendering engine, rather than integrating heavy PDF generation binaries (like `weasyprint`, `wkhtmltopdf`, or `puppeteer`).
-* **Rationale**: Binary PDF generators have extensive OS library dependencies (Pango, Cairo, libc, etc.). Because this diagnostic tool is deployed internally and on support engineer laptops (running Windows, macOS, or Linux) and sometimes in air-gapped environments, shipping headless browser binaries would dramatically increase package size, complicate installations, and fail validation due to security policies. Browser-native printing is 100% portable, secure, and produces identical vector-quality PDFs.
+* **Decision**: We chose to implement a printable CSS layout (`@media print` rules) leveraging the browser's native `window.print()` rendering engine rather than Puppeteer/Weasyprint.
+* **Rationale**:shipping browser binaries increases file sizes and triggers security warnings in corporate, air-gapped setups. Browser-native printing is secure, fast, and generates perfect vector PDFs.
 
-### Trade-off: In-Memory Database vs. File-System Workspace Cache
-* **Decision**: We opted for a stateless file-system cache where session timeline arrays and Markdown reports are saved inside `workspaces/<session_id>/` directories as JSON/Markdown files.
-* **Rationale**: Memory-based caching is volatile; if the FastAPI server restarts, the user's active session is lost. By persisting session folders, the application remains lightweight, stateless (easily scalable behind load balancers), and users can download reports or load past sessions instantly without re-running the diagnostic CPU cycles.
+### Trade-off: Local Git Tracking vs. Remote Configuration Server
+* **Decision**: We chose to host a local Git repository inside the application workspace rather than pulling updates from a central database.
+* **Rationale**: Support teams frequently operate in isolated customer networks without internet access. Local Git database updates ensure the utility remains fully operational, secure, and offline.

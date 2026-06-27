@@ -7,15 +7,21 @@
   - [x] Chronological timeline merger with timezone normalization
   - [x] Anomaly detection and root cause correlation engine
   - [x] Markdown and PDF export handlers
-- [x] Implement frontend client interface
-  - [x] HTML5 layout and file upload drop zone
-  - [x] Custom modern UI theme (vanilla CSS, glassmorphism, responsive)
-  - [x] State management, polling, and API integrations
-  - [x] Interactive timeline rendering with anomaly markers
-  - [x] Markdown display with integrated Mermaid.js diagrams
-- [x] Create documentation
+- [x] Implement self-learning rules & dynamic database
+  - [x] Initialize local Git repository in project directory
+  - [x] Set up dynamic rules.json and parser_config.json configurations
+  - [x] Implement dynamic GenericParser using custom configurations
+  - [x] Build AI Rule Learner (self-learning error clusterer & timestamp analyzer)
+  - [x] Refactor app.py to support folder directory upload and file streams
+  - [x] Refactor app.py to auto-trigger self-learning rules loop during analysis
+- [x] Implement frontend client interface updates
+  - [x] HTML5 folder/directory browse & zip drop-zone controls
+  - [x] Glassmorphic style enhancements for Rules Database view
+  - [x] FAANG-style corporate branding (Magic Software) & Credits footer
+- [ ] Create documentation
   - [x] Write detailed technical architecture white paper
   - [x] Write end-user operations guide
-- [x] Perform verification and validation
-  - [x] Verify utility using NHK production logs ZIP file
-  - [x] Test PDF/Markdown report export functions
+  - [ ] Update documentation to cover the Self-Learning Architecture
+- [ ] Perform verification and validation
+  - [ ] Verify self-learning loops using mock unrecognized exception streams
+  - [ ] Verify folder upload and Git integration
