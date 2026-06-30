@@ -121,6 +121,52 @@ async def upload_logs(files: List[UploadFile] = File(...)):
         # Discover files in the workspace
         discovered = discoverer.discover_files(extracted_dir)
         
+        # Filter discovered files for relevance to accelerate parsing on large production bundles
+        relevant_discovered = []
+        filtered_count = 0
+        for f_info in discovered:
+            f_path = f_info["path"]
+            f_name = f_info["filename"]
+            
+            is_relevant = False
+            lower_name = f_name.lower()
+            if "mgerror" in lower_name or "agent" in lower_name or "sentinel" in lower_name or "db" in lower_name or "ingress" in lower_name or f_info["category"] in ["redis", "sentinel", "ingress", "alb_csv"]:
+                is_relevant = True
+            else:
+                size = f_info["size_bytes"]
+                if size < 100 * 1024:  # Parse small files anyway
+                    is_relevant = True
+                else:
+                    try:
+                        # Quick check for error indicators in first and last 50KB
+                        with open(f_path, 'r', encoding='utf-8', errors='ignore') as f:
+                            head = f.read(50 * 1024)
+                            if size > 100 * 1024:
+                                try:
+                                    f.seek(size - 50 * 1024)
+                                    tail = f.read()
+                                except:
+                                    tail = ""
+                            else:
+                                tail = ""
+                            combined = (head + tail).lower()
+                            keywords = ["error", "critical", "exception", "warn", "fail", "sdown", "odown", "fatal", "crash", "refused", "timeout"]
+                            if any(kw in combined for kw in keywords):
+                                is_relevant = True
+                    except Exception as e:
+                        print(f"Error checking relevance for {f_name}: {e}")
+                        is_relevant = True
+            
+            if is_relevant:
+                relevant_discovered.append(f_info)
+            else:
+                filtered_count += 1
+                
+        if filtered_count > 0:
+            print(f"Production Optimizer: Filtered out {filtered_count} logs containing no error signatures to accelerate processing.")
+        
+        discovered = relevant_discovered
+        
         # Self-Learning Step 1: Detect and register custom timestamp formats
         # Read the first few lines of generic log files that might not match standard formats
         sample_unparsed_lines = []

@@ -70,9 +70,36 @@ class GenericParser(BaseLogParser):
             return self._parse_csv(filepath, relative_path)
             
         entries = []
-        lines = self._read_file_lines(filepath)
+        
+        # Optimize large file memory usage and parsing speed
+        # If file is larger than 5 MB, sample the first 5,000 lines and the last 15,000 lines
+        size_bytes = os.path.getsize(filepath)
+        large_file_threshold = 5 * 1024 * 1024  # 5 MB
+        
+        if size_bytes > large_file_threshold:
+            from collections import deque
+            first_lines = []
+            last_lines_queue = deque(maxlen=15000)
+            
+            try:
+                for line_num, line in enumerate(self._stream_file_lines(filepath), 1):
+                    if line_num <= 5000:
+                        first_lines.append((line_num, line))
+                    else:
+                        last_lines_queue.append((line_num, line))
+            except Exception as e:
+                print(f"Error streaming large file {filepath}: {e}")
+                
+            lines_to_parse = first_lines + list(last_lines_queue)
+        else:
+            try:
+                raw_lines = self._read_file_lines(filepath)
+                lines_to_parse = [(idx, line) for idx, line in enumerate(raw_lines, 1)]
+            except Exception as e:
+                print(f"Error reading file {filepath}: {e}")
+                lines_to_parse = []
 
-        for line_num, line in enumerate(lines, 1):
+        for line_num, line in lines_to_parse:
             line_str = line.strip()
             if not line_str:
                 continue
@@ -252,6 +279,33 @@ class GenericParser(BaseLogParser):
                     lines = f.readlines()
                 os.remove(temp_path)
                 return lines
+            except Exception as inner_e:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+                print(f"Failed bypass copy-read for {filepath}: {inner_e}")
+                raise e
+
+    def _stream_file_lines(self, filepath: str):
+        try:
+            with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                for line in f:
+                    yield line
+        except (PermissionError, IOError, OSError) as e:
+            # Sharing lock bypass: copy to workspaces temp
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
+            temp_dir = os.path.join(project_root, "workspaces", "temp")
+            os.makedirs(temp_dir, exist_ok=True)
+            
+            import uuid
+            import shutil
+            temp_path = os.path.join(temp_dir, f"temp_log_{uuid.uuid4().hex}.log")
+            try:
+                shutil.copyfile(filepath, temp_path)
+                with open(temp_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    for line in f:
+                        yield line
+                os.remove(temp_path)
             except Exception as inner_e:
                 if os.path.exists(temp_path):
                     os.remove(temp_path)
