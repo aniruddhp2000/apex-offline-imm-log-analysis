@@ -197,6 +197,42 @@ async def upload_logs(files: List[UploadFile] = File(...)):
         # Merge timeline
         sorted_timeline = merger.merge(all_entries)
         
+        # Filter and cap timeline for browser readability and performance (keep JSON size < 1MB)
+        high_priority = []
+        low_priority = []
+        for entry in sorted_timeline:
+            is_high = False
+            # Prioritize CRITICAL/ERROR levels
+            if entry.log_level in ["CRITICAL", "ERROR"] or entry.metadata.get("is_crash"):
+                is_high = True
+            # Prioritize sentinel state changes / failovers
+            elif "sentinel" in entry.source_file.lower() and ("down" in entry.message.lower() or "switch" in entry.message.lower()):
+                is_high = True
+            # Prioritize rule matches
+            elif entry.metadata.get("pattern_id"):
+                is_high = True
+                
+            if is_high:
+                high_priority.append(entry)
+            else:
+                low_priority.append(entry)
+                
+        # Limit total timeline entries to 5,000
+        final_timeline = high_priority
+        if len(final_timeline) < 5000:
+            deficit = 5000 - len(final_timeline)
+            if low_priority:
+                # Sample low-priority entries evenly to maintain overall trace context
+                step = max(1, len(low_priority) // deficit)
+                sampled_low = low_priority[::step]
+                final_timeline.extend(sampled_low[:deficit])
+        else:
+            # If high-priority alone exceeds 5,000, cap it at 10,000
+            final_timeline = final_timeline[:10000]
+            
+        final_timeline.sort(key=lambda x: x.timestamp)
+        sorted_timeline = final_timeline
+        
         # Self-Learning Step 2: Extract unrecognized errors and write new rules dynamically
         learned_count = learner.learn_error_rules(sorted_timeline)
         if learned_count > 0:
