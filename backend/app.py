@@ -34,6 +34,12 @@ def find_logs_recursively(base_path):
     if not os.path.exists(base_path):
         return log_files
     for root, dirs, files in os.walk(base_path):
+        # Prune directories we don't care about to speed up walk
+        dirs[:] = [d for d in dirs if d.lower() not in [
+            "node_modules", ".git", ".gradle", ".idea", 
+            "riacache", "webclient", "web_client_cache", "browser_client_cache",
+            "bin", "obj", "temp", "tmp", "builders"
+        ]]
         for file in files:
             lower_file = file.lower()
             if lower_file == "mgerror.log" or lower_file == "imm-agent.log" or lower_file.endswith(".log") or lower_file.endswith(".err"):
@@ -47,6 +53,11 @@ def find_logs_recursively(base_path):
     return log_files
 
 @app.on_event("startup")
+def start_background_learning():
+    import threading
+    thread = threading.Thread(target=startup_learn_flow, daemon=True)
+    thread.start()
+
 def startup_learn_flow():
     # Scan D:\XPA and D:\XPI on startup to discover and learn error logs dynamically
     xpa_path = r"d:\XPA"
