@@ -422,6 +422,11 @@ async def analyze_with_ai(req: AIRequest):
             context=context,
             query=req.query
         )
+        
+        ai_report_path = os.path.join(session_dir, "ai_executive_summary.md")
+        with open(ai_report_path, "w", encoding="utf-8") as f:
+            f.write(response_md)
+            
         return {"markdown_report": response_md}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -445,10 +450,17 @@ async def get_report_data(session_id: str):
     with open(sm_path, 'r', encoding='utf-8') as f:
         summary_data = json.load(f)
 
+    ai_path = os.path.join(session_dir, "ai_executive_summary.md")
+    ai_summary = None
+    if os.path.exists(ai_path):
+        with open(ai_path, 'r', encoding='utf-8') as f:
+            ai_summary = f.read()
+
     return {
         "markdown_report": markdown_content,
         "timeline": timeline_data,
-        "summary": summary_data
+        "summary": summary_data,
+        "ai_summary": ai_summary
     }
 
 @app.get("/api/rules")

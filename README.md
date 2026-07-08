@@ -51,15 +51,15 @@ Automatically learns new error signatures on the fly. No need to constantly upda
 </details>
 
 <details>
-<summary><b>🤖 AI Co-Pilot Integration</b></summary>
+<summary><b>🤖 Premium AI Executive Summary</b></summary>
 <br>
-Built-in support for <b>OpenAI</b>, <b>Anthropic Claude</b>, <b>Google Gemini</b>, and <b>Microsoft Copilot (Azure)</b>. Send targeted timelines or full raw logs directly to an LLM for unstructured, deep-dive root cause analysis.
+Built-in support for <b>OpenAI</b>, <b>Anthropic Claude</b>, <b>Google Gemini</b>, and <b>Microsoft Copilot (Azure)</b>. The AI rigorously enforces a 5-section diagnostic standard and automatically persists its markdown report (including safely rendered Mermaid architecture diagrams) to your session history.
 </details>
 
 <details>
-<summary><b>⏱️ Chronological Trace Timeline</b></summary>
+<summary><b>⏱️ Chronological Trace Timeline & Search</b></summary>
 <br>
-Merges logs from completely disparate systems (e.g., Redis, Ingress, Application) into a unified, second-by-second chronological trace, eliminating the pain of manual timestamp correlation.
+Merges logs from completely disparate systems (e.g., Redis, Ingress, Application) into a unified, second-by-second chronological trace. Instantly filter thousands of log nodes via the client-side Search Bar to pinpoint specific timestamps, errors, or source files.
 </details>
 
 <details>

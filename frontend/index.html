@@ -29,10 +29,10 @@
                 <span class="logo-text">APex <span class="logo-sub">RCA</span></span>
             </div>
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" id="nav-dashboard-link"><box-icon name="line-chart" animation="tada-hover"></box-icon> Dashboard</a>
+                <a href="#" class="nav-item active" id="nav-dashboard-link"><box-icon name="cloud-upload" animation="tada-hover"></box-icon> Upload Portal</a>
                 <a href="#" class="nav-item disabled" id="nav-timeline-link"><box-icon name="time-five" animation="spin-hover"></box-icon> Timeline</a>
                 <a href="#" class="nav-item disabled" id="nav-report-link"><box-icon name="file-find" animation="tada-hover"></box-icon> Analysis Report</a>
-                <a href="#" class="nav-item disabled" id="nav-ai-report-link"><box-icon name="brain" type="solid" color="#a2238e" animation="tada-hover"></box-icon> AI Executive Summary</a>
+                <a href="#" class="nav-item hidden" id="nav-ai-report-link"><box-icon name="brain" type="solid" color="#a2238e" animation="tada-hover"></box-icon> AI Executive Summary</a>
                 <a href="#" class="nav-item" id="nav-history-link"><box-icon name="history" animation="spin-hover"></box-icon> History</a>
                 <a href="#" class="nav-item" id="nav-rules-link"><box-icon name="brain" animation="tada-hover"></box-icon> Rules Engine</a>
             </nav>
@@ -130,8 +130,45 @@
                 </div>
             </section>
 
-            <!-- Dashboard / Results Panel (Active State) -->
-            <section class="workspace-section hidden" id="dashboard-workspace">
+
+
+            <!-- Timeline Workspace -->
+            <section class="workspace-section hidden" id="timeline-workspace">
+                <div class="workspace-grid" style="grid-template-columns: 1fr 1fr;">
+                    <!-- Left Panel: Interactive Timeline -->
+                    <div class="card glass workspace-panel" id="panel-timeline">
+                        <div class="panel-header">
+                            <h2><box-icon name="time-five" animation="spin-hover"></box-icon> Chronological Timeline</h2>
+                            <div class="timeline-filters" style="display:flex; align-items:center; gap:8px;">
+                                <input type="text" id="timeline-search" placeholder="Search timeline..." class="ai-input" style="width: 200px; padding: 6px 12px; margin-right: 12px; font-size: 13px;">
+                                <button class="filter-btn active" data-filter="all">All</button>
+                                <button class="filter-btn" data-filter="CRITICAL">Crashes</button>
+                                <button class="filter-btn" data-filter="WARNING">Failovers</button>
+                                <button class="filter-btn" data-filter="ERROR">Errors</button>
+                            </div>
+                        </div>
+                        <div class="timeline-scroll-area" id="timeline-container">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Raw Log Viewer -->
+                    <div class="card glass workspace-panel" id="panel-log-viewer">
+                        <div class="panel-header">
+                            <h2><box-icon name="code-block" animation="tada-hover"></box-icon> Raw Log File Viewer</h2>
+                            <div class="report-actions">
+                                <span id="log-viewer-title" style="font-size: 13px; color: var(--text-secondary); align-self: center;">Select a timeline event</span>
+                            </div>
+                        </div>
+                        <div class="report-body-area" id="log-viewer-container" style="padding: 0; background: rgba(0, 0, 0, 0.4);">
+                            <pre style="margin: 0; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; color: #F3F4F6;"><code id="log-viewer-code"></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Report Workspace -->
+            <section class="workspace-section hidden" id="report-workspace">
                 <!-- Metrics Grid -->
                 <div class="metrics-grid">
                     <div class="card glass metric-card critical">
@@ -164,56 +201,6 @@
                     </div>
                 </div>
 
-                <!-- Dashboard Report Summary -->
-                <div class="card glass workspace-panel" id="panel-dashboard-summary" style="flex:1;">
-                    <div class="panel-header">
-                        <h2><box-icon name="file-find" animation="tada-hover"></box-icon> Executive Summary</h2>
-                        <div class="report-actions">
-                            <button class="action-btn" id="btn-analyze-new"><box-icon name="undo" animation="spin-hover"></box-icon> New Analysis</button>
-                        </div>
-                    </div>
-                    <div class="report-body-area markdown-body" id="dashboard-summary-container">
-                        <!-- Populated dynamically via JS -->
-                    </div>
-                </div>
-            </section>
-
-            <!-- Timeline Workspace -->
-            <section class="workspace-section hidden" id="timeline-workspace">
-                <div class="workspace-grid" style="grid-template-columns: 1fr 1fr;">
-                    <!-- Left Panel: Interactive Timeline -->
-                    <div class="card glass workspace-panel" id="panel-timeline">
-                        <div class="panel-header">
-                            <h2><box-icon name="time-five" animation="spin-hover"></box-icon> Chronological Timeline</h2>
-                            <div class="timeline-filters">
-                                <button class="filter-btn active" data-filter="all">All</button>
-                                <button class="filter-btn" data-filter="CRITICAL">Crashes</button>
-                                <button class="filter-btn" data-filter="WARNING">Failovers</button>
-                                <button class="filter-btn" data-filter="ERROR">Errors</button>
-                            </div>
-                        </div>
-                        <div class="timeline-scroll-area" id="timeline-container">
-                            <!-- Populated dynamically via JS -->
-                        </div>
-                    </div>
-
-                    <!-- Right Panel: Raw Log Viewer -->
-                    <div class="card glass workspace-panel" id="panel-log-viewer">
-                        <div class="panel-header">
-                            <h2><box-icon name="code-block" animation="tada-hover"></box-icon> Raw Log File Viewer</h2>
-                            <div class="report-actions">
-                                <span id="log-viewer-title" style="font-size: 13px; color: var(--text-secondary); align-self: center;">Select a timeline event</span>
-                            </div>
-                        </div>
-                        <div class="report-body-area" id="log-viewer-container" style="padding: 0; background: rgba(0, 0, 0, 0.4);">
-                            <pre style="margin: 0; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; color: #F3F4F6;"><code id="log-viewer-code"></code></pre>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Report Workspace -->
-            <section class="workspace-section hidden" id="report-workspace">
                 <div class="workspace-grid" style="grid-template-columns: 1fr;">
                     <!-- Right Panel: RCA Markdown Report -->
                     <div class="card glass workspace-panel" id="panel-report">

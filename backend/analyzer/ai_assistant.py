@@ -19,14 +19,20 @@ class AILogAnalyzer:
             "You are an expert enterprise software diagnostic engineer specializing in root cause analysis (RCA) "
             "for distributed systems, microservices, and databases (including Redis/Sentinel and Magic Software). "
             "Your task is to analyze the provided log trace or offline RCA report and provide a deep, highly technical, "
-            "and actionable root cause analysis."
+            "and actionable root cause analysis. "
+            "You MUST format your output strictly into the following 5 sections, using markdown headers:\n"
+            "## 1. Summary / Overview\n"
+            "## 2. Root Cause Analysis (RCA)\n"
+            "## 3. Key Observations\n"
+            "## 4. Known Scenarios over the Internet\n"
+            "## 5. Possible Action Items"
         )
         
         user_prompt = f"Here is the context data:\n\n{context}"
         if query:
             user_prompt += f"\n\nUser Question/Instruction:\n{query}"
         else:
-            user_prompt += "\n\nPlease provide a comprehensive deep-dive analysis, explain what went wrong, and suggest exact remediation steps."
+            user_prompt += "\n\nPlease provide your analysis adhering strictly to the 5 requested sections."
 
         try:
             if provider == "openai":

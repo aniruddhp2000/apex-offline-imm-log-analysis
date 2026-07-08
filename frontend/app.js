@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const fileInput = document.getElementById("file-input");
     const folderInput = document.getElementById("folder-input");
     const uploadWorkspace = document.getElementById("upload-workspace");
-    const dashboardWorkspace = document.getElementById("dashboard-workspace");
     const timelineWorkspace = document.getElementById("timeline-workspace");
     const reportWorkspace = document.getElementById("report-workspace");
     const rulesWorkspace = document.getElementById("rules-workspace");
@@ -45,7 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnAiDownloadMd = document.getElementById("btn-ai-download-md");
     let currentAiMarkdown = "";
     const reportContainer = document.getElementById("report-container");
-    const dashboardSummaryContainer = document.getElementById("dashboard-summary-container");
+    const timelineContainer = document.getElementById("timeline-container");
+    const timelineSearch = document.getElementById("timeline-search");
     const historyListContainer = document.getElementById("history-list-container");
     const rulesListContainer = document.getElementById("rules-list-container");
     const rulesCount = document.getElementById("rules-count");
@@ -103,20 +103,17 @@ document.addEventListener("DOMContentLoaded", () => {
      * Helper to hide all workspaces
      */
     function hideAllWorkspaces() {
-        [uploadWorkspace, dashboardWorkspace, timelineWorkspace, reportWorkspace, aiReportWorkspace, rulesWorkspace, historyWorkspace].forEach(el => {
+        [uploadWorkspace, timelineWorkspace, reportWorkspace, aiReportWorkspace, rulesWorkspace, historyWorkspace].forEach(el => {
             if (el) el.classList.add("hidden");
         });
     }
 
     navDashboardLink.addEventListener("click", (e) => {
         e.preventDefault();
+        if (navDashboardLink.classList.contains("disabled")) return;
         switchNavigation(navDashboardLink);
         hideAllWorkspaces();
-        if (currentSessionId) {
-            dashboardWorkspace.classList.remove("hidden");
-        } else {
-            uploadWorkspace.classList.remove("hidden");
-        }
+        uploadWorkspace.classList.remove("hidden");
     });
 
     navRulesLink.addEventListener("click", (e) => {
@@ -360,6 +357,10 @@ document.addEventListener("DOMContentLoaded", () => {
         stepUpload.classList.add("active");
         fileInput.value = "";
         folderInput.value = "";
+        
+        currentAiMarkdown = "";
+        if (aiReportContainer) aiReportContainer.innerHTML = "";
+        if (navAiReportLink) navAiReportLink.classList.add("hidden");
     }
 
     // --- Load analysis report from backend ---
@@ -395,8 +396,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderTimeline(originalTimeline);
 
                 hideAllWorkspaces();
-                dashboardWorkspace.classList.remove("hidden");
-                switchNavigation(navDashboardLink);
+                reportWorkspace.classList.remove("hidden");
+                switchNavigation(navReportLink);
+                
+                // Handle AI Summary if it exists in history
+                if (data.ai_summary) {
+                    currentAiMarkdown = data.ai_summary;
+                    aiReportContainer.innerHTML = marked.parse(data.ai_summary);
+                    navAiReportLink.classList.remove("hidden");
+                }
 
                 document.querySelector(".main-content").scrollTop = 0;
             })
@@ -469,6 +477,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const clean = p1.replace(/^>\s?/gm, '');
             return `<div class="alert alert-important">${clean}</div>`;
         });
+        
+        // Convert mermaid code blocks into div blocks so mermaid.init works
+        md = md.replace(/```mermaid\n([\s\S]*?)\n```/gim, (m, p1) => {
+            return `<div class="mermaid">\n${p1}\n</div>`;
+        });
+        
         return md;
     }
 
@@ -476,11 +490,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const cleanMarkdown = preprocessMarkdown(markdownText);
         const parsedHtml = marked.parse(cleanMarkdown);
         reportContainer.innerHTML = parsedHtml;
-        
-        // Also render a summary version to the dashboard (first few sections)
-        const summaryEnd = cleanMarkdown.indexOf("\n## Details");
-        const summaryMarkdown = summaryEnd > -1 ? cleanMarkdown.substring(0, summaryEnd) : cleanMarkdown;
-        dashboardSummaryContainer.innerHTML = marked.parse(summaryMarkdown);
         
         try {
             mermaid.init(undefined, reportContainer.querySelectorAll(".mermaid"));
@@ -501,6 +510,16 @@ document.addEventListener("DOMContentLoaded", () => {
             filtered = entries.filter(e => e.log_level === "WARNING" || e.source_file.toLowerCase().includes("sentinel"));
         } else if (activeFilter === "ERROR") {
             filtered = entries.filter(e => e.log_level === "ERROR");
+        }
+
+        const query = timelineSearch ? timelineSearch.value.toLowerCase() : "";
+        if (query) {
+            filtered = filtered.filter(e => {
+                const ts = (e.timestamp || "").toLowerCase();
+                const msg = (e.message || "").toLowerCase();
+                const src = (e.source_file || "").toLowerCase();
+                return ts.includes(query) || msg.includes(query) || src.includes(query);
+            });
         }
 
         if (filtered.length === 0) {
@@ -602,6 +621,12 @@ document.addEventListener("DOMContentLoaded", () => {
             renderTimeline(originalTimeline);
         });
     });
+
+    if (timelineSearch) {
+        timelineSearch.addEventListener("input", () => {
+            renderTimeline(originalTimeline);
+        });
+    }
 
     /**
      * Fetch and render past analysis sessions from the backend
@@ -822,7 +847,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                     // Close modal and switch workspace
                     aiModal.classList.add("hidden");
-                    navAiReportLink.classList.remove("disabled");
+                    navAiReportLink.classList.remove("disabled", "hidden");
                     navAiReportLink.click();
                 } else {
                     alert("Received empty response from AI.");
