@@ -1,15 +1,10 @@
-<div align="center">
-  <br>
-  <img src="frontend/assets/logo.png" alt="APex Logo" width="350"/>
-  <br><br>
-  
-  <h1>APex Offline IMM Log Analysis</h1>
-  
-  <p>
-    <b>An Enterprise-Grade Root Cause Analysis & Diagnostic Hub for Distributed Systems</b>
-  </p>
+# <img src="frontend/assets/logo.png" width="32" height="32" align="absmiddle" style="margin-right: 8px;"> APex Offline IMM Log Analysis
 
-  <p>
+<p>
+  <b>An Enterprise-Grade Root Cause Analysis & Diagnostic Hub for Distributed Systems</b>
+</p>
+
+<p>
     <a href="https://github.com/aniruddhp2000/apex-offline-imm-log-analysis/issues"><img src="https://img.shields.io/github/issues/aniruddhp2000/apex-offline-imm-log-analysis?style=for-the-badge&color=0098da" alt="Issues"></a>
     <a href="https://github.com/aniruddhp2000/apex-offline-imm-log-analysis/network/members"><img src="https://img.shields.io/github/forks/aniruddhp2000/apex-offline-imm-log-analysis?style=for-the-badge&color=0098da" alt="Forks"></a>
     <a href="https://github.com/aniruddhp2000/apex-offline-imm-log-analysis/stargazers"><img src="https://img.shields.io/github/stars/aniruddhp2000/apex-offline-imm-log-analysis?style=for-the-badge&color=a2238e" alt="Stars"></a>
@@ -19,7 +14,6 @@
   <p>
     <i>INTERNAL USE ONLY • CONFIDENTIAL</i>
   </p>
-</div>
 
 <hr>
 
