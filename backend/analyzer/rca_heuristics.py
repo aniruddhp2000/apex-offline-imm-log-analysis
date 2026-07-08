@@ -200,39 +200,44 @@ class RCAHeuristics:
         report.append("## Executive Summary")
         if crashes:
             report.append("> [!CRITICAL]\n"
-                          f"> The engine identified **{len(crashes)} database process crashes** (SIGSEGV / Signal 11).\n"
+                          f"> The engine identified **{len(crashes)} application process crashes** (SIGSEGV / Signal 11).\n"
                           f"> Load balancer logs recorded **{total_http_errs} HTTP 5xx client errors**.")
         else:
             report.append("> [!IMPORTANT]\n"
-                          f"> No master database crashes were detected. However, **{total_http_errs} client-facing HTTP 5xx errors** were scanned.")
+                          f"> No application process crashes were detected. However, **{total_http_errs} client-facing HTTP 5xx errors** were scanned.")
 
         # Incident Correlation
         if correlations:
-            report.append("\n## Chronological Incident Correlation")
+            report.append("\n## Chronological Incident Correlation\n")
             for idx, corr in enumerate(correlations, 1):
                 jst_time = corr["crash_time"] + datetime.timedelta(hours=9)
-                report.append(f"### Incident Event #{idx}")
+                report.append(f"### Incident Event #{idx}\n")
                 report.append(f"* **UTC Time**: `{corr['crash_time'].strftime('%Y-%m-%d %H:%M:%S')}`")
                 report.append(f"* **Local Time (JST)**: `{jst_time.strftime('%Y-%m-%d %H:%M:%S')}`")
                 report.append(f"* **Crashed File Source**: `{corr['crash_file']}`")
                 if corr["active_key"]:
                     report.append(f"* **Active Database Key**: `{corr['active_key']}`")
-                report.append(f"* **Correlated Client HTTP Errors**: `{corr['http_errors_count']}` errors occurred during the failover transition.")
+                report.append(f"* **Correlated Client HTTP Errors**: `{corr['http_errors_count']}` errors occurred during the failover transition.\n")
                 
                 if corr["stack_trace"]:
                     report.append("\n#### Stack Trace Header")
                     report.append("```")
                     for frame in corr["stack_trace"][:6]:
-                        report.append(frame)
-                    report.append("```")
-                
-                if corr["sentinel_events"]:
-                    report.append("\n#### Sentinel Failover Progression")
-                    report.append("```")
+                        report.append(frame.strip())
+                    report.append("```\n")
+                    
+                if corr.get("sentinel_events"):
+                    report.append("#### Internal Event Progression\n")
+                    report.append("| Event | Details |")
+                    report.append("| :--- | :--- |")
                     for f in corr["sentinel_events"][:5]:
-                        report.append(f)
-                    report.append("```")
-                report.append("---")
+                        parts = f.strip().split(" ", 1)
+                        # strictly format text to avoid breaking markdown tables
+                        event = parts[0].replace('\n', '<br>').replace('|', '&#124;')
+                        details = parts[1].replace('\n', '<br>').replace('|', '&#124;') if len(parts) > 1 else ""
+                        report.append(f"| `{event}` | {details} |")
+                    report.append("\n")
+                report.append("---\n")
 
         if cycle_detected:
             mins = int(cycle_interval // 60)
@@ -246,20 +251,23 @@ class RCAHeuristics:
         
         if triggered_rules:
             # Aggregate remediation action items
-            report.append("\n## 🎯 Actionable Remediation Plan")
+            report.append("\n## 🛠️ Actionable Remediation Plan")
             report.append("Based on the offline log analysis, the following actions are highly recommended to resolve the detected anomalies:\n")
             
             # Deduplicate remediations
             remediations = set()
             for r in triggered_rules:
-                remedies = r.get("remediation", "").split(". ")
-                for remedy in remedies:
-                    clean = remedy.strip().replace("\n", "")
-                    if clean and len(clean) > 5 and clean not in remediations:
-                        remediations.add(clean)
-                        if not clean.endswith("."):
-                            clean += "."
-                        report.append(f"- [ ] {clean}")
+                full_remedy = r.get("remediation", "").strip()
+                if not full_remedy or full_remedy in remediations:
+                    continue
+                remediations.add(full_remedy)
+                parts = full_remedy.split(". ")
+                action = parts[0] + "." if parts else full_remedy
+                reasoning = ". ".join(parts[1:]) if len(parts) > 1 else "Required to stabilize system state and prevent recurrence."
+                
+                report.append(f"### {r.get('name', 'General Action')}")
+                report.append(f"* **Action**: {action}")
+                report.append(f"* **Reasoning**: {reasoning}\n")
             
             if not remediations:
                 report.append("- [ ] Investigate application logs further for undetected anomalies.")
@@ -297,23 +305,27 @@ class RCAHeuristics:
                             report.append(f"  {sample}")
                         report.append("  ```")
 
-        # Sequence Diagram
-        report.append("\n## System Sequence Diagram")
-        report.append("```mermaid\nsequenceDiagram\n    participant Client as Client Apps / ALB\n    participant Master as Redis Master (Active)\n    participant Sentinel as Redis Sentinels\n    participant Replica as Redis Replicas\n")
-        report.append("    Note over Master: System writes values matching rules\n    Master->>Master: Process exception or crash\n    Sentinel->>Sentinel: Detects Offline (+sdown/+odown)\n    Note over Client, Master: Requests fail / HTTP 5xx logged\n    Sentinel->>Replica: Promotes Replica to Master\n    Replica->>Replica: Accepts connections (+switch-master)\n    Note over Client: Operations automatically resume\n```")
-
-        # Technical Root Cause & Remediation Guidelines
-        report.append("\n## Suspected Root Cause & Remediation Actions")
-        
-        # Dynamically append remediations based on active rules
-        triggered_remediations = []
-        for r in self.rules:
-            if trigger_counts.get(r["rule_id"], 0) > 0:
-                triggered_remediations.append(f"* **[{r['name']}]**: {r['remediation']}")
-
-        if triggered_remediations:
-            report.append("\n".join(triggered_remediations))
-        else:
-            report.append("No active errors or crashes matched registered rules. Check the raw logs using the interactive timeline.")
+        # Dynamic Sequence Diagram
+        if correlations:
+            report.append("\n## System Sequence Diagram\n")
+            report.append("```mermaid\nsequenceDiagram\n    autonumber\n    participant Client as Client Apps / ALB\n    participant App as Application Process\n    participant System as Internal System\n")
+            
+            for idx, corr in enumerate(correlations, 1):
+                safe_file = corr['crash_file'].replace('\n', ' ').replace('"', "'")
+                report.append(f"    Note over App: Processing {safe_file}")
+                report.append(f"    App->>App: Process exception or crash (Event #{idx})")
+                
+                if corr.get("sentinel_events"):
+                    for f in corr["sentinel_events"][:3]:
+                        # Strictly sanitize strings for mermaid parser
+                        clean_event = f.strip().replace('\n', ' ').replace('"', "'").replace(';', ',')
+                        if len(clean_event) > 45:
+                            clean_event = clean_event[:42] + "..."
+                        report.append(f"    System->>System: Log: {clean_event}")
+                
+                report.append("    Note over Client, App: Requests fail / HTTP 5xx logged")
+                report.append("    App->>App: Process Restarted / Recovered")
+            
+            report.append("    Note over Client: Operations automatically resume\n```\n")
 
         return "\n".join(report)

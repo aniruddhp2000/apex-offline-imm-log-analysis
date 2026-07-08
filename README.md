@@ -6,8 +6,8 @@ A premium enterprise-grade diagnostic portal and AI-assisted Root Cause Analysis
 
 <br>
 
-<a href="https://github.com/aniruddhp2000/apex-offline-imm-log-analysis">
-  <img src="https://img.shields.io/badge/DOWNLOAD_LATEST_(WINDOWS)-0098da?style=for-the-badge&logo=windows" alt="Download">
+<a href="release/APex_RCA_Setup_v1.0.exe">
+  <img src="https://img.shields.io/badge/-Download%20v1.0.0%20(Windows%20EXE)-%2322A6F2?style=for-the-badge&logo=windows" alt="Download Latest Now">
 </a>
 
 <br><br>
@@ -39,6 +39,12 @@ A premium enterprise-grade diagnostic portal and AI-assisted Root Cause Analysis
 </div>
 
 <hr>
+
+## Version History
+
+| Version | Date | Notes | Download |
+| :--- | :--- | :--- | :--- |
+| **v1.0.0** | July 08, 2026 | [v1.0.0 Release Notes](docs/release_notes.md#v100-release-candidate) | [Download v1.0.0 EXE](release/APex_RCA_Setup_v1.0.exe) |
 
 ---
 

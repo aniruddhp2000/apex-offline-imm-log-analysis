@@ -223,7 +223,7 @@ body {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    padding: 30px;
+    padding: 15px 30px;
     overflow-y: auto;
     min-width: 0;
 }
@@ -232,9 +232,9 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 20px;
+    padding-bottom: 10px;
     flex-shrink: 0;
 }
 
@@ -528,9 +528,11 @@ body {
 
 .panel-header {
     display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
+    padding: 16px 20px;
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -1182,6 +1184,12 @@ box-icon {
         overflow: visible !important;
     }
     
+    .mermaid svg {
+        max-width: 100% !important;
+        height: auto !important;
+        page-break-inside: avoid;
+    }
+    
     .card.glass {
         background: none !important;
         box-shadow: none !important;
@@ -1205,3 +1213,6 @@ box-icon {
         max-height: none !important;
     }
 }
+
+.report-signature { margin-top: 60px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: right; font-style: italic; color: var(--text-secondary); font-size: 13px; page-break-before: auto; page-break-inside: avoid; }
+@media print { .report-signature { border-top: none; padding-top: 0; } }

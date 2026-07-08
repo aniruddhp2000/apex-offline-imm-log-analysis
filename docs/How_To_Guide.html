@@ -1,0 +1,65 @@
+<html><head><style>body{font-family: sans-serif; padding: 20px; line-height: 1.6;}</style></head><body><h1>User Guide: Log Diagnostic &amp; RCA Hub</h1>
+<p>Welcome to the <strong>Enterprise Log Diagnostic &amp; Root Cause Analysis (RCA) Hub</strong>! This internal utility is designed for Support, R&amp;D, and DevOps teams to quickly analyze log bundles and diagnose system issues (such as database crashes, Sentinel failovers, and HTTP error spikes).</p>
+<hr />
+<h2>1. Getting Started</h2>
+<h3>Prerequisites</h3>
+<ul>
+<li>Python 3.8 or higher.</li>
+<li>Chrome, Edge, or Firefox browser.</li>
+</ul>
+<h3>Installation &amp; Launching</h3>
+<ol>
+<li>Open a terminal (PowerShell or Bash) and navigate to the project directory:
+   <code>bash
+   cd E:\Tools\imm-rca-utility</code></li>
+<li>Install the lightweight python dependencies:
+   <code>bash
+   pip install -r requirements.txt</code></li>
+<li>Start the application by running the batch script or starting uvicorn directly:</li>
+<li><strong>Windows</strong>: Run <code>run.bat</code></li>
+<li><strong>Any OS</strong>:
+     <code>bash
+     uvicorn backend.app:app --reload --port 8000</code></li>
+<li>Open your browser and navigate to:
+   <code>http://localhost:8000/</code></li>
+</ol>
+<hr />
+<h2>2. Analyzing a Log Bundle</h2>
+<ol>
+<li><strong>Upload</strong>: Drag and drop a <code>.zip</code> log archive directly onto the dashboard's central drop-zone. Alternatively, click the zone to browse and select a file.</li>
+<li><strong>Dynamic Progress Tracking</strong>: The upload indicator will display the progress across four distinct steps:</li>
+<li><strong>Upload</strong>: Transferring the archive to the local session workspace.</li>
+<li><strong>Extract</strong>: Unzipping all log folders (including nested zip archives).</li>
+<li><strong>Parse</strong>: Discovering log types and compiling log streams.</li>
+<li><strong>Analyze</strong>: Correlating timestamps and executing the RCA heuristics engine.</li>
+<li><strong>Visual Dashboard</strong>: Once completed, the interface will slide open to reveal the diagnostic dashboard.</li>
+</ol>
+<hr />
+<h2>3. Navigating the Diagnostic Workspace</h2>
+<p>The results workspace consists of three primary components:</p>
+<h3>A. Metrics Bar</h3>
+<ul>
+<li><strong>Crashes Detected</strong>: Highlights database crashes. Glows red if any crashes are identified.</li>
+<li><strong>Sentinel Failovers</strong>: Displays master election counts.</li>
+<li><strong>HTTP 5xx Errors</strong>: Tracks client-facing request failures.</li>
+<li><strong>Log Entries</strong>: Total logs aggregated into the unified stream.</li>
+</ul>
+<h3>B. Interactive Chronological Timeline (Left Panel)</h3>
+<ul>
+<li><strong>Filtering</strong>: Use the filter buttons (<code>All</code>, <code>Crashes</code>, <code>Failovers</code>, <code>Errors</code>) at the top of the panel to isolate specific log event streams.</li>
+<li><strong>Inspecting Details</strong>: Click on any event card in the timeline to expand the log details. This will reveal:</li>
+<li>Event metadata (Source file path, Line numbers, Status codes).</li>
+<li>The full, raw multi-line log message (e.g. database stack traces, registers, or exception dumps).</li>
+<li>Click again to collapse the card.</li>
+</ul>
+<h3>C. Investigation Report (Right Panel)</h3>
+<ul>
+<li><strong>Markdown Viewer</strong>: Displays the detailed, automated RCA report explaining the sequence of events, suspected triggers, and active database keys.</li>
+<li><strong>Mermaid.js Sequence Diagram</strong>: High-fidelity system sequence diagrams render directly inside this panel to visualize the failover progression.</li>
+<li><strong>Exporting Reports</strong>:</li>
+<li><strong>Markdown</strong>: Click the <code>Markdown</code> button at the top-right of the panel to download the standardized report file (<code>.md</code>).</li>
+<li><strong>PDF</strong>: Click the <code>PDF</code> button to open a print-preview tab. You can save the report as a PDF using your browser's print options (<code>Save as PDF</code>).</li>
+</ul>
+<hr />
+<h2>4. Resetting for a New Analysis</h2>
+<p>To analyze a new log bundle, click the <strong>New Analysis</strong> button at the top-right of the Investigation Report panel. This will clean the current dashboard state and return you to the upload screen.</p></body></html>

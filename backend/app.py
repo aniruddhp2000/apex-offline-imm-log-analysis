@@ -39,69 +39,7 @@ class AIRequest(BaseModel):
     context_mode: str
     query: str = None
 
-def find_logs_recursively(base_path):
-    log_files = []
-    if not os.path.exists(base_path):
-        return log_files
-    for root, dirs, files in os.walk(base_path):
-        # Prune directories we don't care about to speed up walk
-        dirs[:] = [d for d in dirs if d.lower() not in [
-            "node_modules", ".git", ".gradle", ".idea", 
-            "riacache", "webclient", "web_client_cache", "browser_client_cache",
-            "bin", "obj", "temp", "tmp", "builders"
-        ]]
-        for file in files:
-            lower_file = file.lower()
-            if lower_file == "mgerror.log" or lower_file == "imm-agent.log" or lower_file.endswith(".log") or lower_file.endswith(".err"):
-                fp = os.path.join(root, file)
-                if "workspaces" not in fp and "extracted" not in fp and os.path.exists(fp):
-                    try:
-                        if os.path.getsize(fp) > 0:
-                            log_files.append(fp)
-                    except:
-                        pass
-    return log_files
 
-@app.on_event("startup")
-def start_background_learning():
-    import threading
-    thread = threading.Thread(target=startup_learn_flow, daemon=True)
-    thread.start()
-
-def startup_learn_flow():
-    # Scan D:\XPA and D:\XPI on startup to discover and learn error logs dynamically
-    xpa_path = r"d:\XPA"
-    xpi_path = r"d:\XPI"
-    
-    print("Startup self-learning module initiated recursively...")
-    scanned_lines = []
-    parsed_entries = []
-    
-    all_logs = find_logs_recursively(xpa_path) + find_logs_recursively(xpi_path)
-    print(f"Startup discovered {len(all_logs)} local logs from Magic installations.")
-    
-    for log_path in all_logs:
-        try:
-            filename = os.path.basename(log_path)
-            # Read sample lines to learn custom timestamp formats
-            try:
-                sample_lines = generic_parser._read_file_lines(log_path)[:50]
-                scanned_lines.extend(sample_lines)
-            except Exception as e:
-                print(f"Skipping sample reading for {log_path} due to: {e}")
-            # Parse entries to learn error signatures
-            entries = generic_parser.parse(log_path, filename)
-            parsed_entries.extend(entries)
-        except Exception as e:
-            print(f"Error scanning local installation log {log_path}: {e}")
-                
-    # Trigger learning loops
-    if scanned_lines:
-        learner.learn_timestamp_formats(scanned_lines)
-    if parsed_entries:
-        learned = learner.learn_error_rules(parsed_entries)
-        if learned > 0:
-            print(f"Evolving: Learned {learned} new rules from local XPA/XPI installation logs.")
 
 @app.post("/api/upload")
 async def upload_logs(files: List[UploadFile] = File(...)):
@@ -285,7 +223,7 @@ async def upload_logs(files: List[UploadFile] = File(...)):
             json.dump(serialized_timeline, tf, indent=2, ensure_ascii=False)
             
         with open(os.path.join(session_dir, "rca_report.md"), "w", encoding="utf-8") as rf:
-            rf.write(analysis_result["markdown_report"])
+            rf.write(analysis_result["markdown_report"] + "\n\n<div class=\"report-signature\">APex IMM RCA by Aniruddh Potdar</div>")
             
         import time
         with open(os.path.join(session_dir, "summary.json"), "w", encoding="utf-8") as sf:
@@ -422,6 +360,9 @@ async def analyze_with_ai(req: AIRequest):
             context=context,
             query=req.query
         )
+        
+        signature = "\n\n<div class=\"report-signature\">APex IMM RCA by Aniruddh Potdar</div>"
+        response_md += signature
         
         ai_report_path = os.path.join(session_dir, "ai_executive_summary.md")
         with open(ai_report_path, "w", encoding="utf-8") as f:

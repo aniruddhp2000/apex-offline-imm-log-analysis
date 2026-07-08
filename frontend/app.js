@@ -44,7 +44,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnAiDownloadMd = document.getElementById("btn-ai-download-md");
     let currentAiMarkdown = "";
     const reportContainer = document.getElementById("report-container");
-    const timelineContainer = document.getElementById("timeline-container");
     const timelineSearch = document.getElementById("timeline-search");
     const historyListContainer = document.getElementById("history-list-container");
     const rulesListContainer = document.getElementById("rules-list-container");
@@ -113,6 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (navDashboardLink.classList.contains("disabled")) return;
         switchNavigation(navDashboardLink);
         hideAllWorkspaces();
+        resetUploadUI();
         uploadWorkspace.classList.remove("hidden");
     });
 
@@ -478,10 +478,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return `<div class="alert alert-important">${clean}</div>`;
         });
         
-        // Convert mermaid code blocks into div blocks so mermaid.init works
-        md = md.replace(/```mermaid\n([\s\S]*?)\n```/gim, (m, p1) => {
-            return `<div class="mermaid">\n${p1}\n</div>`;
-        });
+        // Ensure mermaid codeblocks are properly spaced (AI sometimes inlines them)
+        md = md.replace(/([^\n])(```mermaid)/gi, "$1\n\n$2");
+        md = md.replace(/(```)\s+([^\n])/g, "$1\n\n$2"); // Fix closing backticks
         
         return md;
     }
@@ -491,9 +490,23 @@ document.addEventListener("DOMContentLoaded", () => {
         const parsedHtml = marked.parse(cleanMarkdown);
         reportContainer.innerHTML = parsedHtml;
         
+        // Convert marked-parsed mermaid code blocks to div.mermaid safely
+        const mermaidCodes = reportContainer.querySelectorAll('code.language-mermaid');
+        mermaidCodes.forEach(code => {
+            const div = document.createElement('div');
+            div.className = 'mermaid';
+            div.textContent = code.textContent; // Using textContent properly decodes marked's entities
+            
+            const pre = code.parentElement;
+            if (pre && pre.tagName.toLowerCase() === 'pre') {
+                pre.replaceWith(div);
+            } else {
+                code.replaceWith(div);
+            }
+        });
+        
         try {
             mermaid.init(undefined, reportContainer.querySelectorAll(".mermaid"));
-            mermaid.init(undefined, dashboardSummaryContainer.querySelectorAll(".mermaid"));
         } catch (e) {
             console.error("Error initializing mermaid: ", e);
         }

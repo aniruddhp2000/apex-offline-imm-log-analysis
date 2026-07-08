@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APex Offline IMM Log Analysis</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/logo.ico">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,9 +100,15 @@
                         <div class="progress-steps">
                             <div class="step-indicator active" id="step-upload"><box-icon name="check-circle" type="solid" animation="tada-hover"></box-icon> Upload</div>
                             <div class="step-indicator" id="step-extract"><box-icon name="loader" animation="spin"></box-icon> Extract</div>
-                            <div class="step-indicator" id="step-parse"><box-icon name="git-branch" animation="tada-hover"></box-icon> Parse</div>
-                            <div class="step-indicator" id="step-analyze"><box-icon name="brain" animation="tada-hover"></box-icon> Analyze</div>
+                            <div class="step-indicator" id="step-parse"><box-icon name="git-merge"></box-icon> Parse</div>
+                            <div class="step-indicator" id="step-analyze"><box-icon name="brain"></box-icon> Analyze</div>
                         </div>
+                    </div>
+                    
+                    <!-- Storage Notice -->
+                    <div class="upload-notice" style="margin-top: 25px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); font-size: 12px; color: var(--text-secondary); text-align: center;">
+                        <box-icon name="hdd" color="var(--text-secondary)" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></box-icon>
+                        <strong>Data Notice:</strong> All uploaded files (ZIPs/Folders) are temporarily extracted and securely stored locally on this machine's disk to parse the timelines. When your disk space runs low, you can safely delete past sessions from the <strong>History</strong> tab to permanently free up storage.
                     </div>
                 </div>
             </section>
@@ -139,8 +147,8 @@
                     <div class="card glass workspace-panel" id="panel-timeline">
                         <div class="panel-header">
                             <h2><box-icon name="time-five" animation="spin-hover"></box-icon> Chronological Timeline</h2>
-                            <div class="timeline-filters" style="display:flex; align-items:center; gap:8px;">
-                                <input type="text" id="timeline-search" placeholder="Search timeline..." class="ai-input" style="width: 200px; padding: 6px 12px; margin-right: 12px; font-size: 13px;">
+                            <div class="timeline-filters" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
+                                <input type="text" id="timeline-search" placeholder="Search timeline..." class="ai-input" style="width: 200px; padding: 6px 12px; font-size: 13px;">
                                 <button class="filter-btn active" data-filter="all">All</button>
                                 <button class="filter-btn" data-filter="CRITICAL">Crashes</button>
                                 <button class="filter-btn" data-filter="WARNING">Failovers</button>

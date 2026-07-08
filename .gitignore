@@ -15,3 +15,11 @@ backend/workspaces/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Build Artifacts
+build/
+dist/
+*.spec
+*.ps1
+*.bat
+!build_release.bat
