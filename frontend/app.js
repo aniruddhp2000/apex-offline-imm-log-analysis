@@ -9,8 +9,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const fileInput = document.getElementById("file-input");
     const folderInput = document.getElementById("folder-input");
     const uploadWorkspace = document.getElementById("upload-workspace");
-    const resultsWorkspace = document.getElementById("results-workspace");
+    const dashboardWorkspace = document.getElementById("dashboard-workspace");
+    const timelineWorkspace = document.getElementById("timeline-workspace");
+    const reportWorkspace = document.getElementById("report-workspace");
     const rulesWorkspace = document.getElementById("rules-workspace");
+    const historyWorkspace = document.getElementById("history-workspace");
     const uploadProgressContainer = document.getElementById("upload-progress-container");
     const progressBar = document.getElementById("upload-progress-bar");
     const progressStatus = document.getElementById("progress-status");
@@ -33,10 +36,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const navRulesLink = document.getElementById("nav-rules-link");
     const navTimelineLink = document.getElementById("nav-timeline-link");
     const navReportLink = document.getElementById("nav-report-link");
+    const navHistoryLink = document.getElementById("nav-history-link");
     const timelineContainer = document.getElementById("timeline-container");
     const reportContainer = document.getElementById("report-container");
+    const dashboardSummaryContainer = document.getElementById("dashboard-summary-container");
+    const historyListContainer = document.getElementById("history-list-container");
     const rulesListContainer = document.getElementById("rules-list-container");
     const rulesCount = document.getElementById("rules-count");
+    
+    // Log Viewer Elements
+    const logViewerCode = document.getElementById("log-viewer-code");
+    const logViewerTitle = document.getElementById("log-viewer-title");
     
     // Actions
     const btnBrowseFile = document.getElementById("btn-browse-file");
@@ -81,15 +91,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }, false);
 
     // --- Navigation ---
+    // --- Navigation Handlers ---
+    
+    /**
+     * Helper to hide all workspaces
+     */
+    function hideAllWorkspaces() {
+        [uploadWorkspace, dashboardWorkspace, timelineWorkspace, reportWorkspace, rulesWorkspace, historyWorkspace].forEach(el => {
+            if (el) el.classList.add("hidden");
+        });
+    }
+
     navDashboardLink.addEventListener("click", (e) => {
         e.preventDefault();
         switchNavigation(navDashboardLink);
-        rulesWorkspace.classList.add("hidden");
+        hideAllWorkspaces();
         if (currentSessionId) {
-            uploadWorkspace.classList.add("hidden");
-            resultsWorkspace.classList.remove("hidden");
+            dashboardWorkspace.classList.remove("hidden");
         } else {
-            resultsWorkspace.classList.add("hidden");
             uploadWorkspace.classList.remove("hidden");
         }
     });
@@ -97,23 +116,48 @@ document.addEventListener("DOMContentLoaded", () => {
     navRulesLink.addEventListener("click", (e) => {
         e.preventDefault();
         switchNavigation(navRulesLink);
-        uploadWorkspace.classList.add("hidden");
-        resultsWorkspace.classList.add("hidden");
+        hideAllWorkspaces();
         rulesWorkspace.classList.remove("hidden");
         loadRulesDatabase();
+    });
+
+    navHistoryLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        switchNavigation(navHistoryLink);
+        hideAllWorkspaces();
+        historyWorkspace.classList.remove("hidden");
+        loadHistory();
     });
 
     navTimelineLink.addEventListener("click", (e) => {
         e.preventDefault();
         if (navTimelineLink.classList.contains("disabled")) return;
-        document.getElementById("panel-timeline").scrollIntoView({ behavior: "smooth" });
+        switchNavigation(navTimelineLink);
+        hideAllWorkspaces();
+        timelineWorkspace.classList.remove("hidden");
+        highlightPanel("panel-timeline");
     });
 
     navReportLink.addEventListener("click", (e) => {
         e.preventDefault();
         if (navReportLink.classList.contains("disabled")) return;
-        document.getElementById("panel-report").scrollIntoView({ behavior: "smooth" });
+        switchNavigation(navReportLink);
+        hideAllWorkspaces();
+        reportWorkspace.classList.remove("hidden");
+        highlightPanel("panel-report");
     });
+
+    function highlightPanel(panelId) {
+        const panel = document.getElementById(panelId);
+        if (!panel) return;
+        panel.classList.remove("panel-highlight");
+        // Force reflow to restart animation
+        void panel.offsetWidth;
+        panel.classList.add("panel-highlight");
+        panel.addEventListener("animationend", () => {
+            panel.classList.remove("panel-highlight");
+        }, { once: true });
+    }
 
     function switchNavigation(activeLink) {
         document.querySelectorAll(".sidebar-nav .nav-item").forEach(item => {
@@ -335,9 +379,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 originalTimeline = data.timeline;
                 renderTimeline(originalTimeline);
 
-                uploadWorkspace.classList.add("hidden");
-                rulesWorkspace.classList.add("hidden");
-                resultsWorkspace.classList.remove("hidden");
+                hideAllWorkspaces();
+                dashboardWorkspace.classList.remove("hidden");
                 switchNavigation(navDashboardLink);
 
                 document.querySelector(".main-content").scrollTop = 0;
@@ -416,10 +459,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderReport(markdownText) {
         const cleanMarkdown = preprocessMarkdown(markdownText);
-        reportContainer.innerHTML = marked.parse(cleanMarkdown);
+        const parsedHtml = marked.parse(cleanMarkdown);
+        reportContainer.innerHTML = parsedHtml;
+        
+        // Also render a summary version to the dashboard (first few sections)
+        const summaryEnd = cleanMarkdown.indexOf("\n## Details");
+        const summaryMarkdown = summaryEnd > -1 ? cleanMarkdown.substring(0, summaryEnd) : cleanMarkdown;
+        dashboardSummaryContainer.innerHTML = marked.parse(summaryMarkdown);
         
         try {
-            mermaid.init(undefined, document.querySelectorAll(".mermaid"));
+            mermaid.init(undefined, reportContainer.querySelectorAll(".mermaid"));
+            mermaid.init(undefined, dashboardSummaryContainer.querySelectorAll(".mermaid"));
         } catch (e) {
             console.error("Error initializing mermaid: ", e);
         }
@@ -471,27 +521,48 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
             
             node.querySelector(".timeline-content").addEventListener("click", () => {
-                const contentDiv = node.querySelector(".timeline-content");
-                let detailBlock = contentDiv.querySelector(".timeline-details");
-                if (detailBlock) {
-                    detailBlock.remove();
-                } else {
-                    detailBlock = document.createElement("div");
-                    detailBlock.className = "timeline-details";
-                    
-                    let metaInfo = `Log Level: ${entry.log_level}\nSource File: ${entry.source_file}\n`;
-                    if (entry.metadata.client_ip) metaInfo += `Client IP: ${entry.metadata.client_ip}\n`;
-                    if (entry.metadata.status_code) metaInfo += `HTTP Code: ${entry.metadata.status_code}\n`;
-                    if (entry.metadata.pattern_id) metaInfo += `Matched Rule ID: ${entry.metadata.pattern_id}\n`;
-                    
-                    detailBlock.innerHTML = `
-                        <strong style="color:var(--accent-blue)">Metadata:</strong>
-                        <pre style="margin:8px 0; color:#fff">${escapeHtml(metaInfo)}</pre>
-                        <strong style="color:var(--accent-blue)">Raw Log Segment:</strong>
-                        <pre style="white-space:pre-wrap; margin-top:8px; color:#fff">${escapeHtml(entry.message)}</pre>
-                    `;
-                    contentDiv.appendChild(detailBlock);
-                }
+                // Remove active styling from all other nodes
+                document.querySelectorAll(".timeline-node").forEach(n => n.classList.remove("active-node"));
+                node.classList.add("active-node");
+                
+                logViewerTitle.innerText = `Loading ${entry.source_file}...`;
+                logViewerCode.innerHTML = "Fetching raw log data...";
+                
+                // Fetch the raw log file from the server
+                fetch(`/api/logs/${currentSessionId}/file?path=${encodeURIComponent(entry.source_file)}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error("Could not load log file.");
+                        return res.text();
+                    })
+                    .then(text => {
+                        logViewerTitle.innerHTML = `<i class="fa-solid fa-file-code"></i> ${escapeHtml(entry.source_file)}`;
+                        
+                        // Use string matching to highlight the exact log line
+                        // The 'raw' attribute was added to the backend ParsedEntry.to_dict
+                        if (entry.raw && text.includes(entry.raw)) {
+                            const escapedRaw = escapeHtml(entry.raw);
+                            const escapedText = escapeHtml(text);
+                            const highlightedText = escapedText.replace(
+                                escapedRaw, 
+                                `<span class="log-highlight" id="active-log-line">${escapedRaw}</span>`
+                            );
+                            logViewerCode.innerHTML = highlightedText;
+                            
+                            // Scroll to highlight
+                            setTimeout(() => {
+                                const highlightEl = document.getElementById("active-log-line");
+                                if (highlightEl) {
+                                    highlightEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            }, 100);
+                        } else {
+                            logViewerCode.innerHTML = escapeHtml(text);
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error loading raw log: ", err);
+                        logViewerCode.innerHTML = `<span style="color:var(--accent-red)">Error: ${err.message}</span>`;
+                    });
             });
 
             timelineContainer.appendChild(node);
@@ -517,6 +588,77 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    /**
+     * Fetch and render past analysis sessions from the backend
+     */
+    function loadHistory() {
+        historyListContainer.innerHTML = `<div class="text-center text-muted" style="padding: 40px 0;"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading history...</div>`;
+        
+        fetch("/api/sessions")
+            .then(res => res.json())
+            .then(data => {
+                if (!data.sessions || data.sessions.length === 0) {
+                    historyListContainer.innerHTML = `<div class="text-center text-muted" style="padding: 40px 0;">No previous analysis sessions found.</div>`;
+                    return;
+                }
+                
+                let tableHtml = `
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Title</th>
+                                <th>Files</th>
+                                <th>Crashes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                data.sessions.forEach(session => {
+                    const dt = new Date(session.timestamp * 1000).toLocaleString();
+                    tableHtml += `
+                        <tr>
+                            <td>${dt}</td>
+                            <td>${escapeHtml(session.name)}</td>
+                            <td>${session.file_count}</td>
+                            <td><span class="${session.crashes > 0 ? 'rule-severity CRITICAL' : ''}">${session.crashes}</span></td>
+                            <td class="history-actions">
+                                <button class="action-btn primary" onclick="window.loadHistoricalSession('${session.session_id}')">Load</button>
+                                <button class="action-btn danger" onclick="window.deleteSession('${session.session_id}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tableHtml += `</tbody></table>`;
+                historyListContainer.innerHTML = tableHtml;
+            })
+            .catch(err => {
+                console.error("Error loading history: ", err);
+                historyListContainer.innerHTML = `<div class="text-center" style="padding: 40px 0; color: var(--accent-red)">Error loading history.</div>`;
+            });
+    }
+
+    // Expose functions to window for onclick handlers in the HTML string
+    window.loadHistoricalSession = (sessionId) => {
+        loadReportResults(sessionId);
+    };
+
+    window.deleteSession = (sessionId) => {
+        if (!confirm("Are you sure you want to delete this analysis session?")) return;
+        fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                if (currentSessionId === sessionId) {
+                    currentSessionId = null;
+                }
+                loadHistory(); // refresh table
+            })
+            .catch(err => alert("Error deleting session"));
+    };
+
     // --- Actions Handlers ---
     btnDownloadMd.addEventListener("click", () => {
         if (!currentSessionId) return;
@@ -532,13 +674,148 @@ document.addEventListener("DOMContentLoaded", () => {
         currentSessionId = null;
         originalTimeline = [];
         resetUploadUI();
-        resultsWorkspace.classList.add("hidden");
-        rulesWorkspace.classList.add("hidden");
+        hideAllWorkspaces();
         uploadWorkspace.classList.remove("hidden");
         switchNavigation(navDashboardLink);
-        document.querySelectorAll(".nav-item").forEach(el => {
-            if (el.id !== "nav-dashboard-link" && el.id !== "nav-rules-link") el.classList.add("disabled");
+        document.querySelectorAll(".sidebar-nav .nav-item").forEach(el => {
+            if (el.id === "nav-timeline-link" || el.id === "nav-report-link") {
+                el.classList.add("disabled");
+            }
         });
-        document.getElementById("main-subheading").innerText = "Upload logs to initiate multi-system trace and anomaly detection.";
+        document.getElementById("main-subheading").innerText = "Upload offline log bundles to initiate multi-system trace and anomaly detection.";
     });
+
+    // --- AI Co-Pilot Logic ---
+    const btnAiCopilot = document.getElementById("btn-ai-copilot");
+    const aiModal = document.getElementById("ai-modal");
+    const closeAiModal = document.getElementById("close-ai-modal");
+    
+    const aiProvider = document.getElementById("ai-provider");
+    const aiModel = document.getElementById("ai-model");
+    const aiModelCustom = document.getElementById("ai-model-custom");
+    const aiApiKey = document.getElementById("ai-api-key");
+    const aiQuery = document.getElementById("ai-query");
+    const btnRunAi = document.getElementById("btn-run-ai");
+    const aiResults = document.getElementById("ai-results");
+
+    const MODEL_MAP = {
+        "openai": ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
+        "claude": ["claude-3-5-sonnet-20240620", "claude-3-opus-20240229", "claude-3-haiku-20240307"],
+        "gemini": ["gemini-1.5-pro", "gemini-1.5-flash"]
+    };
+
+    function updateAiModels() {
+        const provider = aiProvider.value;
+        aiModel.innerHTML = "";
+        
+        if (provider === "microsoft") {
+            aiModel.classList.add("hidden");
+            aiModelCustom.classList.remove("hidden");
+        } else {
+            aiModelCustom.classList.add("hidden");
+            aiModel.classList.remove("hidden");
+            
+            const models = MODEL_MAP[provider] || [];
+            models.forEach(m => {
+                const opt = document.createElement("option");
+                opt.value = m;
+                opt.innerText = m;
+                aiModel.appendChild(opt);
+            });
+        }
+        
+        // Load saved API key for provider
+        const savedKey = localStorage.getItem(`imm_ai_key_${provider}`);
+        if (savedKey) {
+            aiApiKey.value = savedKey;
+        } else {
+            aiApiKey.value = "";
+        }
+    }
+
+    if(btnAiCopilot) {
+        btnAiCopilot.addEventListener("click", () => {
+            aiModal.classList.remove("hidden");
+            updateAiModels();
+            aiResults.classList.add("hidden");
+            aiResults.innerHTML = "";
+        });
+    }
+
+    if(closeAiModal) {
+        closeAiModal.addEventListener("click", () => {
+            aiModal.classList.add("hidden");
+        });
+    }
+
+    if(aiProvider) {
+        aiProvider.addEventListener("change", updateAiModels);
+    }
+
+    if(btnRunAi) {
+        btnRunAi.addEventListener("click", () => {
+            if (!currentSessionId) {
+                alert("No active session. Please load an analysis first.");
+                return;
+            }
+
+            const provider = aiProvider.value;
+            const model = provider === "microsoft" ? aiModelCustom.value : aiModel.value;
+            const apiKey = aiApiKey.value.trim();
+            const query = aiQuery.value.trim();
+            const contextMode = document.querySelector('input[name="ai-context"]:checked').value;
+
+            if (!apiKey) {
+                alert("Please enter an API Key.");
+                return;
+            }
+            if (provider === "microsoft" && !model.startsWith("http")) {
+                alert("Please enter a valid Azure OpenAI endpoint URL for Microsoft Copilot.");
+                return;
+            }
+
+            // Save key to local storage
+            localStorage.setItem(`imm_ai_key_${provider}`, apiKey);
+
+            btnRunAi.disabled = true;
+            btnRunAi.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing... (This may take a minute)';
+            aiResults.classList.remove("hidden");
+            aiResults.innerHTML = '<div class="text-center" style="color:var(--text-secondary)">Transmitting context to AI for deep dive...</div>';
+
+            fetch("/api/ai/analyze", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    session_id: currentSessionId,
+                    provider: provider,
+                    model: model,
+                    api_key: apiKey,
+                    context_mode: contextMode,
+                    query: query
+                })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("AI Request Failed");
+                return res.json();
+            })
+            .then(data => {
+                if (data.markdown_report) {
+                    aiResults.innerHTML = marked.parse(data.markdown_report);
+                } else {
+                    aiResults.innerHTML = '<span style="color:var(--accent-red)">Received empty response from AI.</span>';
+                }
+            })
+            .catch(err => {
+                console.error("AI Error:", err);
+                aiResults.innerHTML = `<span style="color:var(--accent-red)">Error: ${err.message}</span>`;
+            })
+            .finally(() => {
+                btnRunAi.disabled = false;
+                btnRunAi.innerHTML = '<i class="fa-solid fa-bolt"></i> Run Deep Analysis';
+            });
+        });
+    }
+
 });

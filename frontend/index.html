@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Log Diagnostic & RCA Hub</title>
+    <title>APex Offline IMM Log Analysis</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,13 +26,14 @@
         <aside class="sidebar">
             <div class="sidebar-logo">
                 <img src="assets/logo_small.png" alt="Magic Software" class="logo-img">
-                <span class="logo-text">RCA <span class="logo-sub">Hub</span></span>
+                <span class="logo-text">APex <span class="logo-sub">RCA</span></span>
             </div>
             <nav class="sidebar-nav">
                 <a href="#" class="nav-item active" id="nav-dashboard-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-                <a href="#" class="nav-item" id="nav-rules-link"><i class="fa-solid fa-graduation-cap"></i> Rules Engine</a>
                 <a href="#" class="nav-item disabled" id="nav-timeline-link"><i class="fa-solid fa-timeline"></i> Timeline</a>
                 <a href="#" class="nav-item disabled" id="nav-report-link"><i class="fa-solid fa-file-invoice"></i> Analysis Report</a>
+                <a href="#" class="nav-item" id="nav-history-link"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                <a href="#" class="nav-item" id="nav-rules-link"><i class="fa-solid fa-graduation-cap"></i> Rules Engine</a>
             </nav>
             <div class="sidebar-footer">
                 <div class="credits-footer">
@@ -49,8 +50,8 @@
             <!-- Header -->
             <header class="app-header">
                 <div class="header-info">
-                    <h1 id="main-heading">System Root Cause Analysis Hub</h1>
-                    <p class="header-subtitle" id="main-subheading">Upload logs to initiate multi-system trace and anomaly detection.</p>
+                    <h1 id="main-heading">APex Offline IMM Log Analysis</h1>
+                    <p class="header-subtitle" id="main-subheading">Upload offline log bundles to initiate multi-system trace and anomaly detection.</p>
                 </div>
                 <div class="header-right">
                     <div class="theme-switcher" id="theme-switcher">
@@ -116,8 +117,20 @@
                 </div>
             </section>
 
-            <!-- Results Panel (Active State) -->
-            <section class="workspace-section hidden" id="results-workspace">
+            <!-- History Workspace -->
+            <section class="workspace-section hidden" id="history-workspace">
+                <div class="card glass rules-card">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-clock-rotate-left"></i> Analysis History</h2>
+                    </div>
+                    <div class="rules-list-area" id="history-list-container">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard / Results Panel (Active State) -->
+            <section class="workspace-section hidden" id="dashboard-workspace">
                 <!-- Metrics Grid -->
                 <div class="metrics-grid">
                     <div class="card glass metric-card critical">
@@ -150,8 +163,23 @@
                     </div>
                 </div>
 
-                <!-- Analysis Workspace Grid -->
-                <div class="workspace-grid">
+                <!-- Dashboard Report Summary -->
+                <div class="card glass workspace-panel" id="panel-dashboard-summary" style="flex:1;">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-file-invoice"></i> Executive Summary</h2>
+                        <div class="report-actions">
+                            <button class="action-btn" id="btn-analyze-new"><i class="fa-solid fa-arrow-rotate-left"></i> New Analysis</button>
+                        </div>
+                    </div>
+                    <div class="report-body-area markdown-body" id="dashboard-summary-container">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Timeline Workspace -->
+            <section class="workspace-section hidden" id="timeline-workspace">
+                <div class="workspace-grid" style="grid-template-columns: 1fr 1fr;">
                     <!-- Left Panel: Interactive Timeline -->
                     <div class="card glass workspace-panel" id="panel-timeline">
                         <div class="panel-header">
@@ -168,11 +196,30 @@
                         </div>
                     </div>
 
+                    <!-- Right Panel: Raw Log Viewer -->
+                    <div class="card glass workspace-panel" id="panel-log-viewer">
+                        <div class="panel-header">
+                            <h2><i class="fa-solid fa-file-code"></i> Raw Log File Viewer</h2>
+                            <div class="report-actions">
+                                <span id="log-viewer-title" style="font-size: 13px; color: var(--text-secondary); align-self: center;">Select a timeline event</span>
+                            </div>
+                        </div>
+                        <div class="report-body-area" id="log-viewer-container" style="padding: 0; background: rgba(0, 0, 0, 0.4);">
+                            <pre style="margin: 0; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; color: #F3F4F6;"><code id="log-viewer-code"></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Report Workspace -->
+            <section class="workspace-section hidden" id="report-workspace">
+                <div class="workspace-grid" style="grid-template-columns: 1fr;">
                     <!-- Right Panel: RCA Markdown Report -->
                     <div class="card glass workspace-panel" id="panel-report">
                         <div class="panel-header">
                             <h2><i class="fa-solid fa-file-invoice"></i> Investigation Report</h2>
                             <div class="report-actions">
+                                <button class="action-btn success" id="btn-ai-copilot"><i class="fa-solid fa-robot"></i> AI Co-Pilot</button>
                                 <button class="action-btn primary" id="btn-download-pdf"><i class="fa-solid fa-file-pdf"></i> PDF</button>
                                 <button class="action-btn" id="btn-download-md"><i class="fa-solid fa-file-markdown"></i> Markdown</button>
                                 <button class="action-btn" id="btn-analyze-new"><i class="fa-solid fa-arrow-rotate-left"></i> New Analysis</button>
@@ -186,6 +233,55 @@
             </section>
         </main>
     </div>
+
+    <!-- AI Co-Pilot Modal -->
+    <div id="ai-modal" class="modal hidden">
+        <div class="modal-content glass" style="max-width: 800px; width: 90%;">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-robot"></i> APex AI Co-Pilot</h2>
+                <button class="close-btn" id="close-ai-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="display: flex; gap: 20px; flex-direction: column;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>AI Provider</label>
+                        <select id="ai-provider" class="ai-input">
+                            <option value="openai">OpenAI</option>
+                            <option value="claude">Anthropic Claude</option>
+                            <option value="gemini">Google Gemini</option>
+                            <option value="microsoft">Microsoft Copilot (Azure OpenAI)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Model / Endpoint URL</label>
+                        <select id="ai-model" class="ai-input"></select>
+                        <input type="text" id="ai-model-custom" class="ai-input hidden" placeholder="https://<resource>.openai.azure.com/..." />
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>API Key (Stored securely in browser)</label>
+                        <input type="password" id="ai-api-key" class="ai-input" placeholder="sk-..." />
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Analysis Context</label>
+                        <div class="context-toggle">
+                            <label><input type="radio" name="ai-context" value="optimized" checked> <strong>Optimized</strong> (Offline Report + Top 50 Errors - Fast & Cheap)</label><br>
+                            <label><input type="radio" name="ai-context" value="full"> <strong>Full Raw Logs</strong> (Entire extracted bundle - High Token Cost)</label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Custom Query (Optional)</label>
+                        <textarea id="ai-query" class="ai-input" rows="3" placeholder="E.g., Why did the failover happen specifically at 10:45 AM?"></textarea>
+                    </div>
+                </div>
+                <button id="btn-run-ai" class="action-btn success" style="width: 100%; justify-content: center; padding: 12px; font-size: 16px;">
+                    <i class="fa-solid fa-bolt"></i> Run Deep Analysis
+                </button>
+                <div id="ai-results" class="markdown-body hidden" style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); max-height: 400px; overflow-y: auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Client Application Logic -->
     <script src="app.js"></script>
 </body>

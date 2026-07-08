@@ -73,6 +73,47 @@ class WorkspaceManager:
                         print(f"Error extracting nested zip {file}: {e}")
 
     def clean_session(self, session_id: str):
+        """
+        Deletes a session directory and all its contents.
+        """
         session_path = self.get_session_dir(session_id)
         if os.path.exists(session_path):
             shutil.rmtree(session_path)
+
+    def list_sessions(self) -> list:
+        """
+        Scans the workspaces directory and returns a list of dictionaries 
+        containing metadata for all past analysis sessions.
+        """
+        sessions = []
+        if not os.path.exists(self.base_dir):
+            return sessions
+
+        for session_id in os.listdir(self.base_dir):
+            session_path = os.path.join(self.base_dir, session_id)
+            if not os.path.isdir(session_path):
+                continue
+                
+            summary_path = os.path.join(session_path, "summary.json")
+            if os.path.exists(summary_path):
+                try:
+                    import json
+                    with open(summary_path, 'r', encoding='utf-8') as f:
+                        summary = json.load(f)
+                    
+                    # Fetch basic stats for the history view
+                    sessions.append({
+                        "session_id": session_id,
+                        "timestamp": summary.get("timestamp", os.path.getctime(summary_path)),
+                        "file_count": summary.get("discovered_files", 0),
+                        "crashes": summary.get("crashes_count", 0),
+                        "http_errors": summary.get("http_errors_count", 0),
+                        "products": summary.get("detected_products", []),
+                        "name": summary.get("name", "Log Analysis")
+                    })
+                except Exception as e:
+                    print(f"Error reading summary for session {session_id}: {e}")
+        
+        # Sort sessions newest first
+        sessions.sort(key=lambda x: x["timestamp"], reverse=True)
+        return sessions

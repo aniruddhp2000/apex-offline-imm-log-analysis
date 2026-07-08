@@ -15,7 +15,8 @@ class ParsedEntry:
             "log_level": self.log_level,
             "message": self.message,
             "source_file": self.source_file,
-            "metadata": self.metadata
+            "metadata": self.metadata,
+            "raw": self.raw
         }
 
 class BaseLogParser:

@@ -14,12 +14,13 @@ from backend.parser.generic_parser import GenericParser
 from backend.analyzer.timeline_merger import TimelineMerger
 from backend.analyzer.rca_heuristics import RCAHeuristics
 from backend.analyzer.rule_learner import RuleLearner
+from backend.analyzer.ai_assistant import AILogAnalyzer
 from backend.utils.pdf_exporter import PDFExporter
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, ".."))
 
-app = FastAPI(title="Enterprise Log Diagnostic & RCA Hub")
+app = FastAPI(title="APex Offline IMM Log Analysis")
 
 workspace_mgr = WorkspaceManager()
 discoverer = FileDiscoverer()
@@ -28,6 +29,15 @@ generic_parser = GenericParser()
 merger = TimelineMerger()
 analyzer = RCAHeuristics()
 learner = RuleLearner()
+ai_analyzer = AILogAnalyzer()
+
+class AIRequest(BaseModel):
+    session_id: str
+    provider: str
+    model: str
+    api_key: str
+    context_mode: str
+    query: str = None
 
 def find_logs_recursively(base_path):
     log_files = []
@@ -100,17 +110,23 @@ async def upload_logs(files: List[UploadFile] = File(...)):
         extracted_dir = workspace_mgr.get_extracted_dir(session_id)
         
         # Check if single zip uploaded, or a directory of files
+        session_name = "Log Analysis"
         if len(files) == 1 and files[0].filename.endswith(".zip"):
             file = files[0]
+            session_name = file.filename.replace(".zip", "")
             file_path = workspace_mgr.save_uploaded_file(session_id, file.filename, await file.read())
             workspace_mgr.extract_archive(session_id, file_path)
         else:
             # Handle directory / multiple files upload
             for file in files:
                 # Reconstruct relative directory structure
-                # filename will be e.g. "magic-xpi-imm-ns/sentinel.log" or "sentinel.log"
                 # Secure filename path traversal check (ensure it is relative and inside extracted)
                 rel_path = file.filename.replace("\\", "/")
+                
+                # Extract root folder name for session title
+                if session_name == "Log Analysis" and "/" in rel_path:
+                    session_name = rel_path.split("/")[0]
+                    
                 dest_path = os.path.join(extracted_dir, rel_path)
                 os.makedirs(os.path.dirname(dest_path), exist_ok=True)
                 
@@ -271,8 +287,12 @@ async def upload_logs(files: List[UploadFile] = File(...)):
         with open(os.path.join(session_dir, "rca_report.md"), "w", encoding="utf-8") as rf:
             rf.write(analysis_result["markdown_report"])
             
+        import time
         with open(os.path.join(session_dir, "summary.json"), "w", encoding="utf-8") as sf:
             json.dump({
+                "name": session_name,
+                "timestamp": time.time(),
+                "discovered_files": len(discovered),
                 "crashes_count": analysis_result["crashes_count"],
                 "failovers_count": analysis_result["failovers_count"],
                 "http_errors_count": analysis_result["http_errors_count"],
@@ -295,6 +315,115 @@ async def upload_logs(files: List[UploadFile] = File(...)):
     except Exception as e:
         import traceback
         traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/sessions")
+async def get_sessions():
+    """
+    Returns a list of past analysis sessions with metadata.
+    """
+    sessions = workspace_mgr.list_sessions()
+    return {"sessions": sessions}
+
+@app.delete("/api/sessions/{session_id}")
+async def delete_session(session_id: str):
+    """
+    Deletes a specific analysis session and all its data.
+    """
+    workspace_mgr.clean_session(session_id)
+    return {"status": "success", "message": f"Session {session_id} deleted."}
+
+@app.get("/api/logs/{session_id}/file")
+async def get_raw_log_file(session_id: str, path: str):
+    """
+    Returns the raw text content of a parsed log file.
+    Security: prevents directory traversal by ensuring the requested file 
+    is within the session's extracted directory.
+    """
+    extracted_dir = workspace_mgr.get_extracted_dir(session_id)
+    if not os.path.exists(extracted_dir):
+        raise HTTPException(status_code=404, detail="Session not found.")
+        
+    # Prevent path traversal
+    clean_path = path.replace("\\", "/").strip("/")
+    if ".." in clean_path:
+        raise HTTPException(status_code=400, detail="Invalid path.")
+        
+    target_path = os.path.abspath(os.path.join(extracted_dir, clean_path))
+    if not target_path.startswith(os.path.abspath(extracted_dir)):
+        raise HTTPException(status_code=403, detail="Forbidden path.")
+        
+    if not os.path.exists(target_path):
+        raise HTTPException(status_code=404, detail=f"Log file not found: {clean_path}")
+        
+    try:
+        with open(target_path, 'r', encoding='utf-8', errors='ignore') as f:
+            content = f.read()
+        return HTMLResponse(content=content, media_type="text/plain")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/ai/analyze")
+async def analyze_with_ai(req: AIRequest):
+    """
+    Sends the session context (either optimized report+errors or full logs) 
+    to an external LLM for deep analysis.
+    """
+    session_dir = workspace_mgr.get_session_dir(req.session_id)
+    if not os.path.exists(session_dir):
+        raise HTTPException(status_code=404, detail="Session not found.")
+        
+    context = ""
+    
+    if req.context_mode == "full":
+        # Full logs approach (can consume massive tokens)
+        extracted_dir = workspace_mgr.get_extracted_dir(req.session_id)
+        for root, _, files in os.walk(extracted_dir):
+            for file in files:
+                filepath = os.path.join(root, file)
+                try:
+                    with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                        context += f"\n\n--- FILE: {file} ---\n{f.read()}"
+                except:
+                    pass
+        # Hard limit to ~200,000 chars to avoid complete memory/token blowout
+        if len(context) > 200000:
+            context = context[-200000:]
+    else:
+        # Optimized approach
+        md_path = os.path.join(session_dir, "rca_report.md")
+        tl_path = os.path.join(session_dir, "timeline.json")
+        
+        if os.path.exists(md_path):
+            with open(md_path, 'r', encoding='utf-8') as f:
+                context += f"\n--- OFFLINE RCA REPORT ---\n{f.read()}\n"
+                
+        if os.path.exists(tl_path):
+            try:
+                with open(tl_path, 'r', encoding='utf-8') as f:
+                    tl_data = json.load(f)
+                    
+                # Get top 50 errors/criticals
+                errors = [e for e in tl_data if e.get("log_level") in ["ERROR", "CRITICAL"]]
+                context += "\n--- TOP 50 CRITICAL/ERROR TIMELINE EVENTS ---\n"
+                for e in errors[:50]:
+                    context += f"[{e['timestamp']}] {e['source_file']} | {e['message']}\n"
+            except:
+                pass
+                
+    if not context.strip():
+        raise HTTPException(status_code=400, detail="No context could be generated for AI analysis.")
+        
+    try:
+        response_md = ai_analyzer.analyze(
+            provider=req.provider,
+            model=req.model,
+            api_key=req.api_key,
+            context=context,
+            query=req.query
+        )
+        return {"markdown_report": response_md}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/report/{session_id}")

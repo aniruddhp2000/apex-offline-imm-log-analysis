@@ -241,37 +241,57 @@ class RCAHeuristics:
                           f"> **Recurring Outage Cycle**: Failovers repeat at a regular interval of **{mins} minutes**.\n"
                           "> Suspect client-side scheduled job, sync loop, or cron utility triggers.")
 
-        # Rules Engine diagnostics table
-        report.append("\n## Rules Engine Diagnostic Summary")
-        report.append("The engine evaluated logs against both system static rules and active self-learned patterns:\n")
-        report.append("| Rule ID | Rule Name | Type | Severity | Triggers Count | Status |")
-        report.append("| --- | --- | --- | --- | --- | --- |")
+        # Detected Issues Summary — only show rules that actually triggered
+        triggered_rules = [r for r in self.rules if trigger_counts.get(r["rule_id"], 0) > 0]
         
-        has_learned_rules = False
-        for r in self.rules:
-            count = trigger_counts.get(r["rule_id"], 0)
-            status = "Inactive"
-            if count > 0:
-                status = "ACTIVE TRIGGER"
-            r_type = r["type"].upper()
-            if r_type == "LEARNED":
-                has_learned_rules = True
-                r_type = "🤖 SELF-LEARNED"
-                
-            report.append(f"| {r['rule_id']} | {r['name']} | {r_type} | {r['severity']} | {count} | {status} |")
+        if triggered_rules:
+            # Aggregate remediation action items
+            report.append("\n## 🎯 Actionable Remediation Plan")
+            report.append("Based on the offline log analysis, the following actions are highly recommended to resolve the detected anomalies:\n")
+            
+            # Deduplicate remediations
+            remediations = set()
+            for r in triggered_rules:
+                remedies = r.get("remediation", "").split(". ")
+                for remedy in remedies:
+                    clean = remedy.strip().replace("\n", "")
+                    if clean and len(clean) > 5 and clean not in remediations:
+                        remediations.add(clean)
+                        if not clean.endswith("."):
+                            clean += "."
+                        report.append(f"- [ ] {clean}")
+            
+            if not remediations:
+                report.append("- [ ] Investigate application logs further for undetected anomalies.")
 
-        # Display details of self-learned rules
-        if has_learned_rules:
-            report.append("\n### 🤖 Self-Evolved Rules Details")
-            report.append("The system encountered new unrecognized log signatures, automatically extracted their regex patterns, and upgraded its diagnostics database on-the-fly:")
-            for r in self.rules:
-                if r["type"] == "learned" and trigger_counts.get(r["rule_id"], 0) > 0:
-                    report.append(f"\n#### Rule: {r['name']} ({r['rule_id']})")
-                    report.append(f"* **Description**: {r['description']}")
-                    report.append(f"* **Regex Pattern**: `{(r['patterns'][0] if r['patterns'] else '')}`")
-                    report.append(f"* **Remediation Suggestion**: {r['remediation']}")
+            report.append("\n## Detected Issue Patterns")
+            
+            static_triggered = [r for r in triggered_rules if r["type"] != "learned"]
+            learned_triggered = [r for r in triggered_rules if r["type"] == "learned"]
+            
+            total_rules = len(self.rules)
+            report.append(f"The diagnostic engine evaluated logs against **{total_rules} detection rules** — "
+                          f"**{len(triggered_rules)}** matched active issues in this dataset.\n")
+            
+            if static_triggered:
+                report.append("### Known Issue Detections")
+                for r in static_triggered:
+                    count = trigger_counts[r["rule_id"]]
+                    report.append(f"* **{r['name']}** ({r['severity']}) — Detected **{count}** occurrences")
                     if trigger_samples.get(r["rule_id"]):
-                        report.append("* **Example Log Traces**:")
+                        report.append(f"  * Example: `{trigger_samples[r['rule_id']][0][:120]}`")
+            
+            if learned_triggered:
+                report.append("\n### Newly Discovered Issue Patterns")
+                report.append("The engine identified new unrecognized error signatures and automatically classified them:\n")
+                for r in learned_triggered:
+                    count = trigger_counts[r["rule_id"]]
+                    report.append(f"#### {r['name']}")
+                    report.append(f"* **Occurrences**: {count}")
+                    report.append(f"* **Description**: {r['description']}")
+                    report.append(f"* **Suggested Action**: {r['remediation']}")
+                    if trigger_samples.get(r["rule_id"]):
+                        report.append("* **Sample Traces**:")
                         report.append("  ```")
                         for sample in trigger_samples[r["rule_id"]][:2]:
                             report.append(f"  {sample}")
