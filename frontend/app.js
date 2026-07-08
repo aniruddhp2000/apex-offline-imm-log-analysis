@@ -643,6 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Expose functions to window for onclick handlers in the HTML string
     window.loadHistoricalSession = (sessionId) => {
+        currentSessionId = sessionId;
         loadReportResults(sessionId);
     };
 
