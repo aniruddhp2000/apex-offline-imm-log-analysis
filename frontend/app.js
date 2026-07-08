@@ -37,7 +37,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const navTimelineLink = document.getElementById("nav-timeline-link");
     const navReportLink = document.getElementById("nav-report-link");
     const navHistoryLink = document.getElementById("nav-history-link");
+    const navAiReportLink = document.getElementById("nav-ai-report-link");
     const timelineContainer = document.getElementById("timeline-container");
+    const aiReportWorkspace = document.getElementById("ai-report-workspace");
+    const aiReportContainer = document.getElementById("ai-report-container");
+    const btnAiDownloadPdf = document.getElementById("btn-ai-download-pdf");
+    const btnAiDownloadMd = document.getElementById("btn-ai-download-md");
+    let currentAiMarkdown = "";
     const reportContainer = document.getElementById("report-container");
     const dashboardSummaryContainer = document.getElementById("dashboard-summary-container");
     const historyListContainer = document.getElementById("history-list-container");
@@ -97,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
      * Helper to hide all workspaces
      */
     function hideAllWorkspaces() {
-        [uploadWorkspace, dashboardWorkspace, timelineWorkspace, reportWorkspace, rulesWorkspace, historyWorkspace].forEach(el => {
+        [uploadWorkspace, dashboardWorkspace, timelineWorkspace, reportWorkspace, aiReportWorkspace, rulesWorkspace, historyWorkspace].forEach(el => {
             if (el) el.classList.add("hidden");
         });
     }
@@ -145,6 +151,15 @@ document.addEventListener("DOMContentLoaded", () => {
         hideAllWorkspaces();
         reportWorkspace.classList.remove("hidden");
         highlightPanel("panel-report");
+    });
+
+    navAiReportLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (navAiReportLink.classList.contains("disabled")) return;
+        switchNavigation(navAiReportLink);
+        hideAllWorkspaces();
+        aiReportWorkspace.classList.remove("hidden");
+        highlightPanel("panel-ai-report");
     });
 
     function highlightPanel(panelId) {
@@ -780,8 +795,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             btnRunAi.disabled = true;
             btnRunAi.innerHTML = '<box-icon name="loader-alt" animation="spin"></box-icon> Analyzing... (This may take a minute)';
-            aiResults.classList.remove("hidden");
-            aiResults.innerHTML = '<div class="text-center" style="color:var(--text-secondary)">Transmitting context to AI for deep dive...</div>';
+            btnRunAi.innerHTML = '<box-icon name="loader-alt" animation="spin"></box-icon> Transmitting context to AI...';
 
             fetch("/api/ai/analyze", {
                 method: "POST",
@@ -803,19 +817,43 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .then(data => {
                 if (data.markdown_report) {
-                    aiResults.innerHTML = marked.parse(data.markdown_report);
+                    currentAiMarkdown = data.markdown_report;
+                    aiReportContainer.innerHTML = marked.parse(data.markdown_report);
+                    
+                    // Close modal and switch workspace
+                    aiModal.classList.add("hidden");
+                    navAiReportLink.classList.remove("disabled");
+                    navAiReportLink.click();
                 } else {
-                    aiResults.innerHTML = '<span style="color:var(--accent-red)">Received empty response from AI.</span>';
+                    alert("Received empty response from AI.");
                 }
             })
             .catch(err => {
                 console.error("AI Error:", err);
-                aiResults.innerHTML = `<span style="color:var(--accent-red)">Error: ${err.message}</span>`;
+                alert(`AI Analysis Error: ${err.message}`);
             })
             .finally(() => {
                 btnRunAi.disabled = false;
                 btnRunAi.innerHTML = '<box-icon name="bolt" type="solid" animation="flashing-hover"></box-icon> Run Deep Analysis';
             });
+        });
+    }
+    if (btnAiDownloadMd) {
+        btnAiDownloadMd.addEventListener("click", () => {
+            if (!currentAiMarkdown) return;
+            const blob = new Blob([currentAiMarkdown], { type: "text/markdown" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `APex_AI_Report_${currentSessionId || 'export'}.md`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    }
+
+    if (btnAiDownloadPdf) {
+        btnAiDownloadPdf.addEventListener("click", () => {
+            window.print();
         });
     }
 

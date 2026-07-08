@@ -32,6 +32,7 @@
                 <a href="#" class="nav-item active" id="nav-dashboard-link"><box-icon name="line-chart" animation="tada-hover"></box-icon> Dashboard</a>
                 <a href="#" class="nav-item disabled" id="nav-timeline-link"><box-icon name="time-five" animation="spin-hover"></box-icon> Timeline</a>
                 <a href="#" class="nav-item disabled" id="nav-report-link"><box-icon name="file-find" animation="tada-hover"></box-icon> Analysis Report</a>
+                <a href="#" class="nav-item disabled" id="nav-ai-report-link"><box-icon name="brain" type="solid" color="#a2238e" animation="tada-hover"></box-icon> AI Executive Summary</a>
                 <a href="#" class="nav-item" id="nav-history-link"><box-icon name="history" animation="spin-hover"></box-icon> History</a>
                 <a href="#" class="nav-item" id="nav-rules-link"><box-icon name="brain" animation="tada-hover"></box-icon> Rules Engine</a>
             </nav>
@@ -231,6 +232,24 @@
                     </div>
                 </div>
             </section>
+
+            <!-- AI Report Workspace -->
+            <section class="workspace-section hidden" id="ai-report-workspace">
+                <div class="workspace-grid" style="grid-template-columns: 1fr;">
+                    <div class="card glass workspace-panel" id="panel-ai-report">
+                        <div class="panel-header">
+                            <h2><box-icon name="brain" type="solid" color="#a2238e" animation="tada-hover"></box-icon> AI Executive Summary</h2>
+                            <div class="report-actions">
+                                <button class="action-btn success" id="btn-ai-download-pdf"><box-icon name="file-pdf" type="solid" color="#ff4d4d" animation="tada-hover"></box-icon> Export PDF</button>
+                                <button class="action-btn" id="btn-ai-download-md"><box-icon name="file-md" type="solid" color="#00ffcc" animation="tada-hover"></box-icon> Export Markdown</button>
+                            </div>
+                        </div>
+                        <div class="report-body-area markdown-body" id="ai-report-container" style="background: rgba(0,0,0,0.1); border-radius: 8px;">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -276,8 +295,7 @@
                 <button id="btn-run-ai" class="action-btn success" style="width: 100%; justify-content: center; padding: 12px; font-size: 16px;">
                     <box-icon name="bolt" type="solid" animation="flashing-hover"></box-icon> Run Deep Analysis
                 </button>
-                <div id="ai-results" class="markdown-body hidden" style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); max-height: 400px; overflow-y: auto;">
-                </div>
+                <!-- Results will open in the new workspace page -->
             </div>
         </div>
     </div>

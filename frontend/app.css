@@ -1155,3 +1155,53 @@ box-icon {
     display: inline-block;
     vertical-align: middle;
 }
+
+/* Print / PDF Export Styles */
+@media print {
+    /* Hide the entire sidebar */
+    .sidebar {
+        display: none !important;
+    }
+    
+    /* Make the main content area full width */
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    /* Hide the header and report actions */
+    .panel-header, .report-actions {
+        display: none !important;
+    }
+    
+    /* Ensure the body prints nicely */
+    body, html {
+        background: white !important;
+        color: black !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+    
+    .card.glass {
+        background: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .markdown-body {
+        color: black !important;
+    }
+    
+    .workspace-section {
+        height: auto !important;
+        overflow: visible !important;
+    }
+    
+    .report-body-area {
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+}
