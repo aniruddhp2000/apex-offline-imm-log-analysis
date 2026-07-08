@@ -1146,3 +1146,12 @@ body {
     border-color: var(--accent-blue);
     box-shadow: 0 0 0 2px var(--accent-blue-glow);
 }
+
+/* Boxicons integration */
+box-icon {
+    fill: currentColor;
+    width: 1.2em;
+    height: 1.2em;
+    display: inline-block;
+    vertical-align: middle;
+}

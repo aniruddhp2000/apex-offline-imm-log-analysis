@@ -497,13 +497,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const node = document.createElement("div");
             node.className = `timeline-node ${entry.log_level}`;
             
-            let icon = '<i class="fa-solid fa-info"></i>';
+            let icon = '<box-icon name="info-circle" animation="tada-hover"></box-icon>';
             if (entry.log_level === "CRITICAL" || (entry.log_level === "ERROR" && entry.metadata.is_crash)) {
-                icon = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                icon = '<box-icon name="error" animation="flashing-hover"></box-icon>';
             } else if (entry.log_level === "ERROR") {
-                icon = '<i class="fa-solid fa-circle-exclamation"></i>';
+                icon = '<box-icon name="error-circle" animation="flashing-hover"></box-icon>';
             } else if (entry.log_level === "WARNING") {
-                icon = '<i class="fa-solid fa-shuffle"></i>';
+                icon = '<box-icon name="transfer" animation="tada-hover"></box-icon>';
             }
 
             const dt = new Date(entry.timestamp);
@@ -535,7 +535,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         return res.text();
                     })
                     .then(text => {
-                        logViewerTitle.innerHTML = `<i class="fa-solid fa-file-code"></i> ${escapeHtml(entry.source_file)}`;
+                        logViewerTitle.innerHTML = `<box-icon name="code-block" animation="tada-hover"></box-icon> ${escapeHtml(entry.source_file)}`;
                         
                         // Use string matching to highlight the exact log line
                         // The 'raw' attribute was added to the backend ParsedEntry.to_dict
@@ -592,7 +592,7 @@ document.addEventListener("DOMContentLoaded", () => {
      * Fetch and render past analysis sessions from the backend
      */
     function loadHistory() {
-        historyListContainer.innerHTML = `<div class="text-center text-muted" style="padding: 40px 0;"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading history...</div>`;
+        historyListContainer.innerHTML = `<div class="text-center text-muted" style="padding: 40px 0;"><box-icon name="loader-alt" animation="spin"></box-icon> Loading history...</div>`;
         
         fetch("/api/sessions")
             .then(res => res.json())
@@ -778,7 +778,7 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.setItem(`imm_ai_key_${provider}`, apiKey);
 
             btnRunAi.disabled = true;
-            btnRunAi.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing... (This may take a minute)';
+            btnRunAi.innerHTML = '<box-icon name="loader-alt" animation="spin"></box-icon> Analyzing... (This may take a minute)';
             aiResults.classList.remove("hidden");
             aiResults.innerHTML = '<div class="text-center" style="color:var(--text-secondary)">Transmitting context to AI for deep dive...</div>';
 
@@ -813,7 +813,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .finally(() => {
                 btnRunAi.disabled = false;
-                btnRunAi.innerHTML = '<i class="fa-solid fa-bolt"></i> Run Deep Analysis';
+                btnRunAi.innerHTML = '<box-icon name="bolt" type="solid" animation="flashing-hover"></box-icon> Run Deep Analysis';
             });
         });
     }

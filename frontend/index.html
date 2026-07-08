@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
     <!-- CSS Stylesheet -->
     <link rel="stylesheet" href="app.css">
     <!-- Marked Markdown Parser and Mermaid Diagrams -->
@@ -29,11 +29,11 @@
                 <span class="logo-text">APex <span class="logo-sub">RCA</span></span>
             </div>
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" id="nav-dashboard-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-                <a href="#" class="nav-item disabled" id="nav-timeline-link"><i class="fa-solid fa-timeline"></i> Timeline</a>
-                <a href="#" class="nav-item disabled" id="nav-report-link"><i class="fa-solid fa-file-invoice"></i> Analysis Report</a>
-                <a href="#" class="nav-item" id="nav-history-link"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
-                <a href="#" class="nav-item" id="nav-rules-link"><i class="fa-solid fa-graduation-cap"></i> Rules Engine</a>
+                <a href="#" class="nav-item active" id="nav-dashboard-link"><box-icon name="line-chart" animation="tada-hover"></box-icon> Dashboard</a>
+                <a href="#" class="nav-item disabled" id="nav-timeline-link"><box-icon name="time-five" animation="spin-hover"></box-icon> Timeline</a>
+                <a href="#" class="nav-item disabled" id="nav-report-link"><box-icon name="file-find" animation="tada-hover"></box-icon> Analysis Report</a>
+                <a href="#" class="nav-item" id="nav-history-link"><box-icon name="history" animation="spin-hover"></box-icon> History</a>
+                <a href="#" class="nav-item" id="nav-rules-link"><box-icon name="brain" animation="tada-hover"></box-icon> Rules Engine</a>
             </nav>
             <div class="sidebar-footer">
                 <div class="credits-footer">
@@ -71,13 +71,13 @@
             <section class="workspace-section active" id="upload-workspace">
                 <div class="card glass upload-card">
                     <div class="upload-dropzone" id="log-dropzone">
-                        <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                        <box-icon name="cloud-upload" animation="fade-up-hover"></box-icon>
                         <h3>Analyze Log Directory or Archive</h3>
                         <p>Drag and drop a ZIP file or log folder, or select a browse option below</p>
                         
                         <div class="upload-actions">
-                            <button class="upload-btn primary" id="btn-browse-file"><i class="fa-solid fa-file-zipper"></i> Browse ZIP</button>
-                            <button class="upload-btn" id="btn-browse-folder"><i class="fa-solid fa-folder-open"></i> Browse Folder</button>
+                            <button class="upload-btn primary" id="btn-browse-file"><box-icon name="file-archive" type="solid" animation="tada-hover"></box-icon> Browse ZIP</button>
+                            <button class="upload-btn" id="btn-browse-folder"><box-icon name="folder-open" type="solid" animation="tada-hover"></box-icon> Browse Folder</button>
                         </div>
                         
                         <span class="upload-hint">Supports ZIP archives, individual logs, or directories containing logs</span>
@@ -95,10 +95,10 @@
                             <div class="progress-bar" id="upload-progress-bar"></div>
                         </div>
                         <div class="progress-steps">
-                            <div class="step-indicator active" id="step-upload"><i class="fa-solid fa-circle-check"></i> Upload</div>
-                            <div class="step-indicator" id="step-extract"><i class="fa-solid fa-arrows-spin"></i> Extract</div>
-                            <div class="step-indicator" id="step-parse"><i class="fa-solid fa-code-branch"></i> Parse</div>
-                            <div class="step-indicator" id="step-analyze"><i class="fa-solid fa-brain"></i> Analyze</div>
+                            <div class="step-indicator active" id="step-upload"><box-icon name="check-circle" type="solid" animation="tada-hover"></box-icon> Upload</div>
+                            <div class="step-indicator" id="step-extract"><box-icon name="loader" animation="spin"></box-icon> Extract</div>
+                            <div class="step-indicator" id="step-parse"><box-icon name="git-branch" animation="tada-hover"></box-icon> Parse</div>
+                            <div class="step-indicator" id="step-analyze"><box-icon name="brain" animation="tada-hover"></box-icon> Analyze</div>
                         </div>
                     </div>
                 </div>
@@ -108,7 +108,7 @@
             <section class="workspace-section hidden" id="rules-workspace">
                 <div class="card glass rules-card">
                     <div class="panel-header">
-                        <h2><i class="fa-solid fa-graduation-cap"></i> Dynamic Rules Engine Database</h2>
+                        <h2><box-icon name="brain" animation="tada-hover"></box-icon> Dynamic Rules Engine Database</h2>
                         <span class="rules-count-badge" id="rules-count">0 Rules Active</span>
                     </div>
                     <div class="rules-list-area" id="rules-list-container">
@@ -121,7 +121,7 @@
             <section class="workspace-section hidden" id="history-workspace">
                 <div class="card glass rules-card">
                     <div class="panel-header">
-                        <h2><i class="fa-solid fa-clock-rotate-left"></i> Analysis History</h2>
+                        <h2><box-icon name="history" animation="spin-hover"></box-icon> Analysis History</h2>
                     </div>
                     <div class="rules-list-area" id="history-list-container">
                         <!-- Populated dynamically via JS -->
@@ -134,28 +134,28 @@
                 <!-- Metrics Grid -->
                 <div class="metrics-grid">
                     <div class="card glass metric-card critical">
-                        <div class="metric-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                        <div class="metric-icon"><box-icon name="error" animation="flashing-hover"></box-icon></div>
                         <div class="metric-data">
                             <span class="metric-value" id="metric-crashes">0</span>
                             <span class="metric-label">Crashes Detected</span>
                         </div>
                     </div>
                     <div class="card glass metric-card warning">
-                        <div class="metric-icon"><i class="fa-solid fa-shuffle"></i></div>
+                        <div class="metric-icon"><box-icon name="transfer" animation="tada-hover"></box-icon></div>
                         <div class="metric-data">
                             <span class="metric-value" id="metric-failovers">0</span>
                             <span class="metric-label">Sentinel Failovers</span>
                         </div>
                     </div>
                     <div class="card glass metric-card danger">
-                        <div class="metric-icon"><i class="fa-solid fa-bug"></i></div>
+                        <div class="metric-icon"><box-icon name="bug" type="solid" animation="tada-hover"></box-icon></div>
                         <div class="metric-data">
                             <span class="metric-value" id="metric-errors">0</span>
                             <span class="metric-label">HTTP 5xx Errors</span>
                         </div>
                     </div>
                     <div class="card glass metric-card info">
-                        <div class="metric-icon"><i class="fa-solid fa-list-check"></i></div>
+                        <div class="metric-icon"><box-icon name="list-check" animation="tada-hover"></box-icon></div>
                         <div class="metric-data">
                             <span class="metric-value" id="metric-entries">0</span>
                             <span class="metric-label">Log Entries Processed</span>
@@ -166,9 +166,9 @@
                 <!-- Dashboard Report Summary -->
                 <div class="card glass workspace-panel" id="panel-dashboard-summary" style="flex:1;">
                     <div class="panel-header">
-                        <h2><i class="fa-solid fa-file-invoice"></i> Executive Summary</h2>
+                        <h2><box-icon name="file-find" animation="tada-hover"></box-icon> Executive Summary</h2>
                         <div class="report-actions">
-                            <button class="action-btn" id="btn-analyze-new"><i class="fa-solid fa-arrow-rotate-left"></i> New Analysis</button>
+                            <button class="action-btn" id="btn-analyze-new"><box-icon name="undo" animation="spin-hover"></box-icon> New Analysis</button>
                         </div>
                     </div>
                     <div class="report-body-area markdown-body" id="dashboard-summary-container">
@@ -183,7 +183,7 @@
                     <!-- Left Panel: Interactive Timeline -->
                     <div class="card glass workspace-panel" id="panel-timeline">
                         <div class="panel-header">
-                            <h2><i class="fa-solid fa-timeline"></i> Chronological Timeline</h2>
+                            <h2><box-icon name="time-five" animation="spin-hover"></box-icon> Chronological Timeline</h2>
                             <div class="timeline-filters">
                                 <button class="filter-btn active" data-filter="all">All</button>
                                 <button class="filter-btn" data-filter="CRITICAL">Crashes</button>
@@ -199,7 +199,7 @@
                     <!-- Right Panel: Raw Log Viewer -->
                     <div class="card glass workspace-panel" id="panel-log-viewer">
                         <div class="panel-header">
-                            <h2><i class="fa-solid fa-file-code"></i> Raw Log File Viewer</h2>
+                            <h2><box-icon name="code-block" animation="tada-hover"></box-icon> Raw Log File Viewer</h2>
                             <div class="report-actions">
                                 <span id="log-viewer-title" style="font-size: 13px; color: var(--text-secondary); align-self: center;">Select a timeline event</span>
                             </div>
@@ -217,12 +217,12 @@
                     <!-- Right Panel: RCA Markdown Report -->
                     <div class="card glass workspace-panel" id="panel-report">
                         <div class="panel-header">
-                            <h2><i class="fa-solid fa-file-invoice"></i> Investigation Report</h2>
+                            <h2><box-icon name="file-find" animation="tada-hover"></box-icon> Investigation Report</h2>
                             <div class="report-actions">
-                                <button class="action-btn success" id="btn-ai-copilot"><i class="fa-solid fa-robot"></i> AI Co-Pilot</button>
-                                <button class="action-btn primary" id="btn-download-pdf"><i class="fa-solid fa-file-pdf"></i> PDF</button>
-                                <button class="action-btn" id="btn-download-md"><i class="fa-solid fa-file-markdown"></i> Markdown</button>
-                                <button class="action-btn" id="btn-analyze-new"><i class="fa-solid fa-arrow-rotate-left"></i> New Analysis</button>
+                                <button class="action-btn success" id="btn-ai-copilot"><box-icon name="bot" type="solid" animation="tada-hover"></box-icon> AI Co-Pilot</button>
+                                <button class="action-btn primary" id="btn-download-pdf"><box-icon name="file-pdf" type="solid" animation="tada-hover"></box-icon> PDF</button>
+                                <button class="action-btn" id="btn-download-md"><box-icon name="file-md" type="solid" animation="tada-hover"></box-icon> Markdown</button>
+                                <button class="action-btn" id="btn-analyze-new"><box-icon name="undo" animation="spin-hover"></box-icon> New Analysis</button>
                             </div>
                         </div>
                         <div class="report-body-area markdown-body" id="report-container">
@@ -238,7 +238,7 @@
     <div id="ai-modal" class="modal hidden">
         <div class="modal-content glass" style="max-width: 800px; width: 90%;">
             <div class="modal-header">
-                <h2><i class="fa-solid fa-robot"></i> APex AI Co-Pilot</h2>
+                <h2><box-icon name="bot" type="solid" animation="tada-hover"></box-icon> APex AI Co-Pilot</h2>
                 <button class="close-btn" id="close-ai-modal">&times;</button>
             </div>
             <div class="modal-body" style="display: flex; gap: 20px; flex-direction: column;">
@@ -274,7 +274,7 @@
                     </div>
                 </div>
                 <button id="btn-run-ai" class="action-btn success" style="width: 100%; justify-content: center; padding: 12px; font-size: 16px;">
-                    <i class="fa-solid fa-bolt"></i> Run Deep Analysis
+                    <box-icon name="bolt" type="solid" animation="flashing-hover"></box-icon> Run Deep Analysis
                 </button>
                 <div id="ai-results" class="markdown-body hidden" style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); max-height: 400px; overflow-y: auto;">
                 </div>
