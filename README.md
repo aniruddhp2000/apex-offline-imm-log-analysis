@@ -1,25 +1,44 @@
-# <img src="frontend/assets/logo.png" width="32" height="32" align="absmiddle" style="margin-right: 8px;"> APex Offline IMM Log Analysis
+<div align="center">
 
-<p>
-  <b>An Enterprise-Grade Root Cause Analysis & Diagnostic Hub for Distributed Systems</b>
-</p>
+# APex Offline IMM Log Analysis
 
-<p>
-    <a href="https://github.com/aniruddhp2000/apex-offline-imm-log-analysis/issues"><img src="https://img.shields.io/github/issues/aniruddhp2000/apex-offline-imm-log-analysis?style=for-the-badge&color=0098da" alt="Issues"></a>
-    <a href="https://github.com/aniruddhp2000/apex-offline-imm-log-analysis/network/members"><img src="https://img.shields.io/github/forks/aniruddhp2000/apex-offline-imm-log-analysis?style=for-the-badge&color=0098da" alt="Forks"></a>
-    <a href="https://github.com/aniruddhp2000/apex-offline-imm-log-analysis/stargazers"><img src="https://img.shields.io/github/stars/aniruddhp2000/apex-offline-imm-log-analysis?style=for-the-badge&color=a2238e" alt="Stars"></a>
-    <a href="LICENSE"><img src="https://img.shields.io/badge/License-Proprietary-red.svg?style=for-the-badge" alt="License"></a>
-  </p>
+A premium enterprise-grade diagnostic portal and AI-assisted Root Cause Analysis utility for **Magic XPI In-Memory Middleware (IMM)** and distributed applications.
 
-  <p>
-    <i>INTERNAL USE ONLY • CONFIDENTIAL</i>
-  </p>
+<br>
+
+<a href="https://github.com/aniruddhp2000/apex-offline-imm-log-analysis">
+  <img src="https://img.shields.io/badge/DOWNLOAD_LATEST_(WINDOWS)-0098da?style=for-the-badge&logo=windows" alt="Download">
+</a>
+
+<br><br>
+
+<img src="https://img.shields.io/badge/Release-v1.0.0-success?style=flat-square&logo=github&logoColor=white">
+<img src="https://img.shields.io/badge/License-Proprietary-red?style=flat-square">
+<img src="https://img.shields.io/badge/Tests-Passing-success?style=flat-square">
+<img src="https://img.shields.io/badge/Platform-Windows_|_Linux_|_Mac-0078D6?style=flat-square">
+
+<br><br>
+
+<table>
+  <tr>
+    <td align="center" width="200" style="padding: 20px;">
+      <img src="frontend/assets/logo.png" alt="Magic Logo" width="100">
+    </td>
+    <td align="left" style="padding: 20px;">
+      <b>Created by:</b> Aniruddh Potdar (ITS-Support)<br>
+      <b>Company:</b> Magic Software Enterprises Ltd. (A MATRIX Company)<br>
+      <b>Copyright:</b> © 2026 Aniruddh Potdar. All rights reserved.
+    </td>
+  </tr>
+</table>
+
+<br>
+
+**Troubleshooting middleware shouldn't be hard.** APex operates completely offline to merge distributed timelines, parse raw IMM diagnostics, and leverage multi-provider AI (OpenAI, Claude, Gemini, Azure) to instantly identify root causes.
+
+</div>
 
 <hr>
-
-## 📖 Overview
-
-**APex Offline IMM Log Analysis** is a premium, AI-powered diagnostic suite designed for the post-mortem analysis of complex, distributed software environments. Built specifically to handle **Magic Software (IMM)**, **Redis**, **Sentinel**, and generic application logs, APex accelerates the mean-time-to-resolution (MTTR) by automatically extracting failure signatures, failovers, and HTTP anomalies from massive zip bundles.
 
 ---
 
